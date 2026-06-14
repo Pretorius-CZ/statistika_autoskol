@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Statistiky zkoušek řidičů – Magistrát Jablonec n. N.</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d1117;color:#e6edf3;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh;line-height:1.5}
+.wrap{max-width:1200px;margin:0 auto;padding:0 20px}
+
+/* HEADER */
+.hdr{background:#161b22;border-bottom:1px solid #30363d;padding:14px 0}
+.hdr-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.hdr-brand{display:flex;align-items:center;gap:12px}
+.hdr-logo{width:40px;height:40px;background:#00e5b8;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#0d1117;flex-shrink:0}
+.hdr-title h1{font-size:17px;font-weight:600}
+.hdr-title p{font-size:12px;color:#8b949e}
+#hdrPeriod{font-size:18px;font-weight:600;color:#00e5b8}
+.hdr-actions{display:flex;align-items:center;gap:10px}
+.btn-ghost{display:flex;align-items:center;gap:6px;background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:7px 14px;border-radius:6px;cursor:pointer;font-size:13px;text-decoration:none;transition:background .15s}
+.btn-ghost:hover{background:#30363d}
+
+/* MONTH SELECTOR */
+.months-bar{background:#161b22;border-bottom:1px solid #30363d;padding:14px 0}
+.month-grid{display:flex;flex-direction:column;gap:5px}
+.month-row{display:flex;align-items:center;gap:5px}
+.yr-lbl{width:38px;font-size:12px;color:#8b949e;flex-shrink:0}
+.mbtn{width:26px;height:26px;border-radius:4px;border:1px solid transparent;background:transparent;color:#3d444d;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.mbtn.has{color:#e6edf3;border-color:#30363d}
+.mbtn.has:hover{background:#21262d}
+.mbtn.active{background:#00e5b8!important;color:#0d1117;font-weight:700;border-color:#00e5b8}
+.mbtn:disabled{cursor:not-allowed;opacity:.3}
+
+/* MAIN */
+.main{padding:22px 0}
+
+/* CARDS */
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+@media(max-width:600px){.cards{grid-template-columns:1fr}}
+.card{background:#161b22;border:1px solid #30363d;border-radius:10px;overflow:hidden}
+.card-hdr{padding:11px 18px;font-size:12px;font-weight:700;letter-spacing:.06em;border-bottom:1px solid #30363d}
+.card-hdr.t{color:#00e5b8}
+.card-hdr.j{color:#3b82f6}
+.card-body{display:grid;grid-template-columns:1fr 1fr}
+.ci{padding:14px 18px;border-right:1px solid #30363d;border-bottom:1px solid #30363d}
+.ci:nth-child(2n){border-right:none}
+.ci:nth-child(3),.ci:nth-child(4){border-bottom:none}
+.ci-lbl{font-size:11px;color:#8b949e;margin-bottom:5px}
+.ci-val{font-size:26px;font-weight:700;line-height:1}
+.ci-pct{font-size:13px;color:#8b949e;margin-left:7px}
+
+/* TABLE */
+.sec{background:#161b22;border:1px solid #30363d;border-radius:10px;overflow:hidden;margin-bottom:20px}
+.sec-hdr{padding:14px 18px;border-bottom:1px solid #30363d}
+.sec-hdr h2{font-size:15px;font-weight:600}
+.sec-hdr p{font-size:12px;color:#8b949e}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{padding:9px 14px;text-align:left;font-size:11px;color:#8b949e;font-weight:600;letter-spacing:.05em;border-bottom:1px solid #30363d;white-space:nowrap}
+thead th:not(:first-child){text-align:center}
+tbody tr{border-bottom:1px solid #21262d}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:#1c2128}
+td{padding:11px 14px;font-size:13px}
+td.nm{font-weight:500}
+td.sc{text-align:center}
+.cn{font-weight:700;font-size:14px;display:block}
+.cp{font-size:11px;display:block;margin-top:1px}
+.pg{color:#22c55e}
+.pm{color:#f59e0b}
+.pb{color:#ef4444}
+.dash{color:#3d444d}
+
+/* CHARTS */
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+@media(max-width:700px){.charts{grid-template-columns:1fr}}
+.ch-sec{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:18px}
+.ch-title{font-size:13px;font-weight:600;margin-bottom:2px}
+.ch-sub{font-size:11px;color:#8b949e;margin-bottom:14px}
+.ch-wrap{position:relative;height:210px}
+
+/* STATES */
+.empty{text-align:center;padding:50px 20px;color:#8b949e}
+.spinner{width:28px;height:28px;border:3px solid #30363d;border-top-color:#00e5b8;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* AS LINK */
+.as-link{background:none;border:none;color:#e6edf3;font-size:13px;font-weight:500;cursor:pointer;padding:0;text-align:left;text-decoration:underline;text-decoration-color:#30363d;text-underline-offset:3px}
+.as-link:hover{color:#00e5b8;text-decoration-color:#00e5b8}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:#161b22;border:1px solid #30363d;border-radius:12px;width:100%;max-width:700px;max-height:88vh;overflow-y:auto}
+.modal-hdr{padding:16px 20px;border-bottom:1px solid #30363d;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#161b22;z-index:1}
+.modal-hdr h2{font-size:15px;font-weight:600}
+.modal-close{background:none;border:none;color:#8b949e;font-size:22px;cursor:pointer;line-height:1;padding:2px 6px}
+.modal-close:hover{color:#e6edf3}
+.modal-body{padding:20px}
+.modal-section{margin-bottom:20px}
+.modal-section h3{font-size:12px;font-weight:700;letter-spacing:.06em;color:#8b949e;margin-bottom:10px}
+.yoy-up{color:#22c55e}.yoy-dn{color:#ef4444}.yoy-eq{color:#8b949e}
+
+@media print{
+  .months-bar,.hdr-actions{display:none}
+  body{background:#fff;color:#000}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="wrap">
+    <div class="hdr-inner">
+      <div class="hdr-brand">
+        <div class="hdr-logo">ňo</div>
+        <div class="hdr-title">
+          <h1>Statistiky zkoušek řidičů</h1>
+          <p>Magistrát Jablonec nad Nisou</p>
+        </div>
+      </div>
+      <div id="hdrPeriod">—</div>
+      <div class="hdr-actions">
+        <a href="upload.html" class="btn-ghost">↑ Nahrát data</a>
+        <button class="btn-ghost" onclick="window.print()">↓ Export PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="months-bar">
+  <div class="wrap">
+    <div id="monthGrid" class="month-grid">
+      <div class="empty"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="wrap">
+    <div id="content">
+      <div class="empty">Vyberte měsíc v navigaci výše.</div>
+    </div>
+  </div>
+</div>
+
+<div id="modalBg" class="modal-bg" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h2 id="modalTitle"></h2>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+const SUPA_URL = 'https://yqpqtbhknjtoyzdbsuzv.supabase.co';
+const SUPA_KEY = 'sb_publishable_fqNSIFNzyYWfdMk3NmZqTA_ZqV-dAit';
+let sb;
+try {
+  sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+} catch(e) {
+  document.getElementById('monthGrid').innerHTML =
+    `<div class="empty" style="color:#ef4444">Chyba inicializace Supabase: ${e.message}</div>`;
+}
+
+const MN = ['','Leden','Únor','Březen','Duben','Květen','Červen','Červenec','Srpen','Září','Říjen','Listopad','Prosinec'];
+const YEARS = [2021,2022,2023,2024,2025,2026];
+
+let selM = null, selY = null;
+let chT = null, chJ = null;
+let available = new Set();
+
+async function init() {
+  if (!sb) return;
+  const [rt, rj] = await Promise.all([
+    sb.from('zkousky_testy').select('mesic,rok'),
+    sb.from('zkousky_jizdy').select('mesic,rok'),
+  ]);
+  if (rt.error || rj.error) {
+    const msg = (rt.error || rj.error).message;
+    console.error('Supabase chyba:', rt.error, rj.error);
+    document.getElementById('monthGrid').innerHTML =
+      `<div class="empty" style="color:#ef4444">Chyba spojení s databází: ${msg}</div>`;
+    return;
+  }
+  available = new Set([...(rt.data||[]),...(rj.data||[])].map(r=>`${r.rok}-${r.mesic}`));
+  renderGrid();
+  if (!available.size) {
+    document.getElementById('content').innerHTML =
+      `<div class="empty">Databáze je prázdná – nahrajte data přes <a href="upload.html" style="color:#00e5b8">Nahrát data</a>.</div>`;
+    return;
+  }
+  const sorted = [...available].sort((a,b)=>{
+    const [ay,am]=a.split('-').map(Number), [by,bm]=b.split('-').map(Number);
+    return ay!==by ? ay-by : am-bm;
+  });
+  const [y,m] = sorted.pop().split('-').map(Number);
+  pick(m, y);
+}
+
+function renderGrid() {
+  document.getElementById('monthGrid').innerHTML = YEARS.map(y =>
+    `<div class="month-row">
+      <span class="yr-lbl">${y}</span>
+      ${Array.from({length:12},(_,i)=>i+1).map(m => {
+        const has = available.has(`${y}-${m}`);
+        const act = selM===m && selY===y;
+        return `<button class="mbtn${has?' has':''}${act?' active':''}"
+          ${!has?'disabled':''}
+          onclick="pick(${m},${y})"
+          title="${MN[m]} ${y}">${m}</button>`;
+      }).join('')}
+    </div>`
+  ).join('');
+}
+
+async function pick(m, y) {
+  selM = m; selY = y;
+  renderGrid();
+  document.getElementById('hdrPeriod').textContent = `${MN[m]} ${y}`;
+  document.getElementById('content').innerHTML = `<div class="empty"><div class="spinner"></div>Načítám data…</div>`;
+
+  const [rt, rj] = await Promise.all([
+    sb.from('zkousky_testy').select('autoskola,pokus_typ,hodnoceni').eq('mesic',m).eq('rok',y).limit(50000),
+    sb.from('zkousky_jizdy').select('autoskola,pokus_typ,hodnoceni').eq('mesic',m).eq('rok',y).limit(50000),
+  ]);
+
+  if (rt.error || rj.error) {
+    document.getElementById('content').innerHTML = `<div class="empty">Chyba při načítání dat.</div>`;
+    console.error(rt.error, rj.error);
+    return;
+  }
+  render(rt.data||[], rj.data||[]);
+}
+
+function agg(data) {
+  const p = data.filter(r=>r.pokus_typ==='první');
+  return {
+    p1:  p.length,
+    p1u: p.filter(r=>r.hodnoceni==='prospěl').length,
+    cel: data.length,
+    celu:data.filter(r=>r.hodnoceni==='prospěl').length,
+  };
+}
+
+function pct(a,b){ return b ? +(a/b*100).toFixed(1) : null }
+
+function cls(p){
+  if(p===null) return '';
+  return p>=70 ? 'pg' : p>=50 ? 'pm' : 'pb';
+}
+
+function cell(att, usp) {
+  if(!att) return `<td class="sc"><span class="dash">–</span></td>`;
+  const p = pct(usp,att);
+  return `<td class="sc"><span class="cn">${att}</span><span class="cp ${cls(p)}">${p!==null?p+' %':'–'}</span></td>`;
+}
+
+function render(testy, jizdy) {
+  const ts = agg(testy), js = agg(jizdy);
+
+  const allAS = [...new Set([...testy,...jizdy].map(r=>r.autoskola))].sort((a,b)=>a.localeCompare(b,'cs'));
+
+  const rows = allAS.map(as => {
+    const t = testy.filter(r=>r.autoskola===as);
+    const j = jizdy.filter(r=>r.autoskola===as);
+    const tp = t.filter(r=>r.pokus_typ==='první');
+    const jp = j.filter(r=>r.pokus_typ==='první');
+    return {
+      as,
+      tp1:tp.length, tp1u:tp.filter(r=>r.hodnoceni==='prospěl').length,
+      tc: t.length,  tcu: t.filter(r=>r.hodnoceni==='prospěl').length,
+      jp1:jp.length, jp1u:jp.filter(r=>r.hodnoceni==='prospěl').length,
+      jc: j.length,  jcu: j.filter(r=>r.hodnoceni==='prospěl').length,
+    };
+  });
+
+  const cardRow = (s, cls1) => `
+    <div class="card">
+      <div class="card-hdr ${cls1}">${cls1==='t'?'ELEKTRONICKÝ TEST':'JÍZDY'}</div>
+      <div class="card-body">
+        <div class="ci"><div class="ci-lbl">1. pokusy celkem</div><div class="ci-val">${s.p1}</div></div>
+        <div class="ci"><div class="ci-lbl">Úspěšní v 1. pokusu</div><div class="ci-val">${s.p1u}<span class="ci-pct">${pct(s.p1u,s.p1)??'–'} %</span></div></div>
+        <div class="ci"><div class="ci-lbl">${cls1==='t'?'Zkoušky celkem':'Jízdy celkem'}</div><div class="ci-val">${s.cel}</div></div>
+        <div class="ci"><div class="ci-lbl">Celkem úspěšní</div><div class="ci-val">${s.celu}<span class="ci-pct">${pct(s.celu,s.cel)??'–'} %</span></div></div>
+      </div>
+    </div>`;
+
+  document.getElementById('content').innerHTML = `
+    <div class="cards">${cardRow(ts,'t')}${cardRow(js,'j')}</div>
+
+    <div class="sec">
+      <div class="sec-hdr"><h2>Přehled autoškol</h2><p>Seřazeno abecedně</p></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>AUTOŠKOLA</th>
+            <th style="color:#00e5b8">T 1.p.</th>
+            <th style="color:#00e5b8">T cel.</th>
+            <th style="color:#3b82f6">J 1.p.</th>
+            <th style="color:#3b82f6">J cel.</th>
+          </tr></thead>
+          <tbody>
+            ${rows.map(r=>`<tr>
+              <td class="nm"><button class="as-link" data-as="${r.as.replace(/"/g,'&quot;')}" onclick="openModal(this.dataset.as)">${r.as}</button></td>
+              ${r.tc===0&&r.tp1===0
+                ? `<td class="sc"><span class="dash">–</span></td><td class="sc"><span class="dash">–</span></td>`
+                : cell(r.tp1,r.tp1u)+cell(r.tc,r.tcu)}
+              ${r.jc===0&&r.jp1===0
+                ? `<td class="sc"><span class="dash">–</span></td><td class="sc"><span class="dash">–</span></td>`
+                : cell(r.jp1,r.jp1u)+cell(r.jc,r.jcu)}
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="charts">
+      <div class="ch-sec">
+        <div class="ch-title">Elektronický test</div>
+        <div class="ch-sub">Počty zkoušek per autoškola</div>
+        <div class="ch-wrap"><canvas id="chT"></canvas></div>
+      </div>
+      <div class="ch-sec">
+        <div class="ch-title">Jízdy</div>
+        <div class="ch-sub">Počty jízd per autoškola</div>
+        <div class="ch-wrap"><canvas id="chJ"></canvas></div>
+      </div>
+    </div>`;
+
+  drawCharts(rows);
+}
+
+function drawCharts(rows) {
+  const labels = rows.map(r => r.as.length>16 ? r.as.slice(0,15)+'…' : r.as);
+  const opts = (d1, d2, l1, l2) => ({
+    type:'bar',
+    data:{labels, datasets:[
+      {label:l1, data:d1, backgroundColor:'rgba(0,229,184,.75)', borderRadius:2},
+      {label:l2, data:d2, backgroundColor:'rgba(0,229,184,.25)', borderRadius:2},
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#8b949e',font:{size:11}}}},
+      scales:{
+        x:{ticks:{color:'#8b949e',font:{size:9},maxRotation:50},grid:{color:'#21262d'}},
+        y:{ticks:{color:'#8b949e'},grid:{color:'#21262d'},beginAtZero:true},
+      }
+    }
+  });
+
+  if(chT) chT.destroy();
+  if(chJ) chJ.destroy();
+  chT = new Chart(document.getElementById('chT'), opts(rows.map(r=>r.tp1), rows.map(r=>r.tc), '1. pokusy','Zkoušky celkem'));
+  chJ = new Chart(document.getElementById('chJ'), opts(rows.map(r=>r.jp1), rows.map(r=>r.jc), '1. pokusy','Jízdy celkem'));
+}
+
+// ── MODAL ─────────────────────────────────────────────────────
+function closeModal() {
+  document.getElementById('modalBg').style.display = 'none';
+}
+
+async function openModal(as) {
+  document.getElementById('modalTitle').textContent = as;
+  document.getElementById('modalBody').innerHTML = '<div class="empty"><div class="spinner"></div>Načítám…</div>';
+  document.getElementById('modalBg').style.display = 'flex';
+
+  const [rt, rj] = await Promise.all([
+    sb.from('zkousky_testy').select('rok,pokus_typ,hodnoceni').eq('autoskola', as),
+    sb.from('zkousky_jizdy').select('rok,pokus_typ,hodnoceni').eq('autoskola', as),
+  ]);
+
+  const tData = rt.data || [], jData = rj.data || [];
+  const years = [...new Set([...tData, ...jData].map(r => r.rok))].sort((a,b) => a-b);
+
+  if (!years.length) {
+    document.getElementById('modalBody').innerHTML = '<div class="empty">Žádná data.</div>';
+    return;
+  }
+
+  const byYear = years.map(y => {
+    const t  = tData.filter(r => r.rok === y);
+    const j  = jData.filter(r => r.rok === y);
+    const tp = t.filter(r => r.pokus_typ === 'první');
+    const jp = j.filter(r => r.pokus_typ === 'první');
+    return {
+      y,
+      t_cel: t.length,  t_usp: t.filter(r => r.hodnoceni === 'prospěl').length,
+      t_p1:  tp.length, t_p1u: tp.filter(r => r.hodnoceni === 'prospěl').length,
+      j_cel: j.length,  j_usp: j.filter(r => r.hodnoceni === 'prospěl').length,
+      j_p1:  jp.length, j_p1u: jp.filter(r => r.hodnoceni === 'prospěl').length,
+      cel:   t.length + j.length,
+    };
+  });
+
+  const rows = byYear.map((r, i) => {
+    const prev = i > 0 ? byYear[i-1].cel : null;
+    const diff = prev !== null ? r.cel - prev : null;
+    const yoyPct = prev ? (diff / prev * 100).toFixed(1) : null;
+    let yoyHtml = '<span class="dash">–</span>';
+    if (diff !== null) {
+      const cls2 = diff > 0 ? 'yoy-up' : diff < 0 ? 'yoy-dn' : 'yoy-eq';
+      const sign  = diff > 0 ? '+' : '';
+      yoyHtml = `<span class="${cls2}">${sign}${diff} (${sign}${yoyPct} %)</span>`;
+    }
+    const tCell = r.t_cel
+      ? `${r.t_cel} <small style="color:#8b949e">${pct(r.t_usp,r.t_cel) ?? '–'} %</small>`
+      : '<span class="dash">–</span>';
+    const jCell = r.j_cel
+      ? `${r.j_cel} <small style="color:#8b949e">${pct(r.j_usp,r.j_cel) ?? '–'} %</small>`
+      : '<span class="dash">–</span>';
+    return `<tr>
+      <td><strong>${r.y}</strong></td>
+      <td class="sc">${tCell}</td>
+      <td class="sc">${jCell}</td>
+      <td class="sc"><strong>${r.cel}</strong></td>
+      <td class="sc">${yoyHtml}</td>
+    </tr>`;
+  });
+
+  // Celkový součet
+  const totT = byYear.reduce((s,r) => s + r.t_cel, 0);
+  const totJ = byYear.reduce((s,r) => s + r.j_cel, 0);
+
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-section">
+      <h3>PŘEHLED PO ROCÍCH</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Rok</th>
+            <th style="color:#00e5b8">Testy (úsp. %)</th>
+            <th style="color:#3b82f6">Jízdy (úsp. %)</th>
+            <th>Celkem</th>
+            <th>Meziroční</th>
+          </tr></thead>
+          <tbody>${rows.join('')}</tbody>
+        </table>
+      </div>
+    </div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap">
+      <div class="card" style="flex:1;min-width:160px">
+        <div class="card-hdr t">TESTY CELKEM</div>
+        <div style="padding:14px 18px;font-size:26px;font-weight:700">${totT}</div>
+      </div>
+      <div class="card" style="flex:1;min-width:160px">
+        <div class="card-hdr j">JÍZDY CELKEM</div>
+        <div style="padding:14px 18px;font-size:26px;font-weight:700">${totJ}</div>
+      </div>
+      <div class="card" style="flex:1;min-width:160px">
+        <div class="card-hdr" style="color:#a78bfa">ZKOUŠKY CELKEM</div>
+        <div style="padding:14px 18px;font-size:26px;font-weight:700">${totT + totJ}</div>
+      </div>
+    </div>`;
+}
+
+init();
+</script>
+</body>
+</html>

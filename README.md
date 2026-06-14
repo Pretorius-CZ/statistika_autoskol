@@ -1,0 +1,1 @@
+﻿# statistika_autoskol
