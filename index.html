@@ -452,6 +452,43 @@ function renderYear(testy, jizdy, y) {
     </div>
 
     <div class="sec">
+      <div class="sec-hdr"><h2>Přehled po měsících</h2><p>Rok ${y}</p></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>MĚSÍC</th>
+            <th style="color:#00e5b8">T 1.p.</th>
+            <th style="color:#00e5b8">T cel.</th>
+            <th style="color:#00e5b8">T úsp. %</th>
+            <th style="color:#3b82f6">J 1.p.</th>
+            <th style="color:#3b82f6">J cel.</th>
+            <th style="color:#3b82f6">J úsp. %</th>
+          </tr></thead>
+          <tbody>
+            ${months.map(m => {
+              const tm = testy.filter(r=>r.mesic===m);
+              const jm = jizdy.filter(r=>r.mesic===m);
+              const tp = pct(tm.filter(r=>r.hodnoceni==='prospěl').length, tm.length);
+              const jp = pct(jm.filter(r=>r.hodnoceni==='prospěl').length, jm.length);
+              const tp1 = tm.filter(r=>r.pokus_typ==='první').length;
+              const jp1 = jm.filter(r=>r.pokus_typ==='první').length;
+              const dash = '<span class="dash">–</span>';
+              return '<tr>'
+                + '<td class="nm">' + MN[m] + '</td>'
+                + '<td class="sc">' + (tp1 || dash) + '</td>'
+                + '<td class="sc">' + (tm.length || dash) + '</td>'
+                + '<td class="sc"><span class="' + cls(tp) + '">' + (tp !== null ? tp + ' %' : dash) + '</span></td>'
+                + '<td class="sc">' + (jp1 || dash) + '</td>'
+                + '<td class="sc">' + (jm.length || dash) + '</td>'
+                + '<td class="sc"><span class="' + cls(jp) + '">' + (jp !== null ? jp + ' %' : dash) + '</span></td>'
+                + '</tr>';
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="sec">
       <div class="sec-hdr"><h2>Přehled autoškol</h2><p>Seřazeno abecedně · celý rok ${y}</p></div>
       <div class="tbl-wrap">
         <table>
