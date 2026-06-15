@@ -27,7 +27,11 @@ body{background:#0d1117;color:#e6edf3;font-family:-apple-system,BlinkMacSystemFo
 .months-bar{background:#161b22;border-bottom:1px solid #30363d;padding:14px 0}
 .month-grid{display:flex;flex-direction:column;gap:5px}
 .month-row{display:flex;align-items:center;gap:5px}
-.yr-lbl{width:38px;font-size:12px;color:#8b949e;flex-shrink:0}
+.yr-btn{width:38px;height:26px;border-radius:4px;border:1px solid transparent;background:transparent;color:#3d444d;font-size:12px;cursor:pointer;flex-shrink:0;transition:all .15s}
+.yr-btn.has{color:#8b949e;border-color:#30363d}
+.yr-btn.has:hover{background:#21262d;color:#e6edf3}
+.yr-btn.yr-active{background:#00e5b8!important;color:#0d1117;font-weight:700;border-color:#00e5b8}
+.yr-btn:disabled{cursor:not-allowed;opacity:.3}
 .mbtn{width:26px;height:26px;border-radius:4px;border:1px solid transparent;background:transparent;color:#3d444d;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .mbtn.has{color:#e6edf3;border-color:#30363d}
 .mbtn.has:hover{background:#21262d}
@@ -171,7 +175,7 @@ const MN = ['','Leden','Únor','Březen','Duben','Květen','Červen','Červenec'
 const YEARS = [2021,2022,2023,2024,2025,2026];
 
 let selM = null, selY = null;
-let chT = null, chJ = null;
+let chT = null, chJ = null, chYT = null, chYJ = null;
 let available = new Set();
 
 async function fetchAllPages(table, columns) {
@@ -218,9 +222,14 @@ async function init() {
 }
 
 function renderGrid() {
-  document.getElementById('monthGrid').innerHTML = YEARS.map(y =>
-    `<div class="month-row">
-      <span class="yr-lbl">${y}</span>
+  document.getElementById('monthGrid').innerHTML = YEARS.map(y => {
+    const yearHas = [...available].some(k => k.startsWith(`${y}-`));
+    const yearAct = selM === null && selY === y;
+    return `<div class="month-row">
+      <button class="yr-btn${yearHas?' has':''}${yearAct?' yr-active':''}"
+        ${!yearHas?'disabled':''}
+        onclick="pickYear(${y})"
+        title="Rok ${y}">${y}</button>
       ${Array.from({length:12},(_,i)=>i+1).map(m => {
         const has = available.has(`${y}-${m}`);
         const act = selM===m && selY===y;
@@ -229,8 +238,8 @@ function renderGrid() {
           onclick="pick(${m},${y})"
           title="${MN[m]} ${y}">${m}</button>`;
       }).join('')}
-    </div>`
-  ).join('');
+    </div>`;
+  }).join('');
 }
 
 async function pick(m, y) {
@@ -372,6 +381,148 @@ function drawCharts(rows) {
   if(chJ) chJ.destroy();
   chT = new Chart(document.getElementById('chT'), opts(rows.map(r=>r.tp1), rows.map(r=>r.tc), '1. pokusy','Zkoušky celkem'));
   chJ = new Chart(document.getElementById('chJ'), opts(rows.map(r=>r.jp1), rows.map(r=>r.jc), '1. pokusy','Jízdy celkem'));
+}
+
+// ── ROK ───────────────────────────────────────────────────────
+async function pickYear(y) {
+  selY = y; selM = null;
+  renderGrid();
+  document.getElementById('hdrPeriod').textContent = `Rok ${y}`;
+  document.getElementById('content').innerHTML = `<div class="empty"><div class="spinner"></div>Načítám data…</div>`;
+
+  const [rt, rj] = await Promise.all([
+    sb.from('zkousky_testy').select('autoskola,pokus_typ,hodnoceni,mesic').eq('rok', y).limit(50000),
+    sb.from('zkousky_jizdy').select('autoskola,pokus_typ,hodnoceni,mesic').eq('rok', y).limit(50000),
+  ]);
+
+  if (rt.error || rj.error) {
+    document.getElementById('content').innerHTML = `<div class="empty">Chyba při načítání dat.</div>`;
+    console.error(rt.error, rj.error);
+    return;
+  }
+  renderYear(rt.data || [], rj.data || [], y);
+}
+
+function renderYear(testy, jizdy, y) {
+  const ts = agg(testy), js = agg(jizdy);
+
+  const allAS = [...new Set([...testy,...jizdy].map(r=>r.autoskola))].sort((a,b)=>a.localeCompare(b,'cs'));
+  const rows = allAS.map(as => {
+    const t = testy.filter(r=>r.autoskola===as);
+    const j = jizdy.filter(r=>r.autoskola===as);
+    const tp = t.filter(r=>r.pokus_typ==='první');
+    const jp = j.filter(r=>r.pokus_typ==='první');
+    return {
+      as,
+      tp1:tp.length, tp1u:tp.filter(r=>r.hodnoceni==='prospěl').length,
+      tc: t.length,  tcu: t.filter(r=>r.hodnoceni==='prospěl').length,
+      jp1:jp.length, jp1u:jp.filter(r=>r.hodnoceni==='prospěl').length,
+      jc: j.length,  jcu: j.filter(r=>r.hodnoceni==='prospěl').length,
+    };
+  });
+
+  const months = [...new Set([...testy,...jizdy].map(r=>r.mesic))].sort((a,b)=>a-b);
+
+  const cardRow = (s, cls1) => `
+    <div class="card">
+      <div class="card-hdr ${cls1}">${cls1==='t'?'ELEKTRONICKÝ TEST':'JÍZDY'}</div>
+      <div class="card-body">
+        <div class="ci"><div class="ci-lbl">1. pokusy celkem</div><div class="ci-val">${s.p1}</div></div>
+        <div class="ci"><div class="ci-lbl">Úspěšní v 1. pokusu</div><div class="ci-val">${s.p1u}<span class="ci-pct">${pct(s.p1u,s.p1)??'–'} %</span></div></div>
+        <div class="ci"><div class="ci-lbl">${cls1==='t'?'Zkoušky celkem':'Jízdy celkem'}</div><div class="ci-val">${s.cel}</div></div>
+        <div class="ci"><div class="ci-lbl">Celkem úspěšní</div><div class="ci-val">${s.celu}<span class="ci-pct">${pct(s.celu,s.cel)??'–'} %</span></div></div>
+      </div>
+    </div>`;
+
+  document.getElementById('content').innerHTML = `
+    <div class="cards">${cardRow(ts,'t')}${cardRow(js,'j')}</div>
+
+    <div class="charts">
+      <div class="ch-sec">
+        <div class="ch-title">Elektronický test – průběh roku ${y}</div>
+        <div class="ch-sub">Počty zkoušek po měsících</div>
+        <div class="ch-wrap"><canvas id="chYT"></canvas></div>
+      </div>
+      <div class="ch-sec">
+        <div class="ch-title">Jízdy – průběh roku ${y}</div>
+        <div class="ch-sub">Počty jízd po měsících</div>
+        <div class="ch-wrap"><canvas id="chYJ"></canvas></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-hdr"><h2>Přehled autoškol</h2><p>Seřazeno abecedně · celý rok ${y}</p></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>AUTOŠKOLA</th>
+            <th style="color:#00e5b8">T 1.p.</th>
+            <th style="color:#00e5b8">T cel.</th>
+            <th style="color:#3b82f6">J 1.p.</th>
+            <th style="color:#3b82f6">J cel.</th>
+          </tr></thead>
+          <tbody>
+            ${rows.map(r=>`<tr>
+              <td class="nm"><button class="as-link" data-as="${r.as.replace(/"/g,'&quot;')}" onclick="openModal(this.dataset.as)">${r.as}</button></td>
+              ${r.tc===0&&r.tp1===0
+                ? `<td class="sc"><span class="dash">–</span></td><td class="sc"><span class="dash">–</span></td>`
+                : cell(r.tp1,r.tp1u)+cell(r.tc,r.tcu)}
+              ${r.jc===0&&r.jp1===0
+                ? `<td class="sc"><span class="dash">–</span></td><td class="sc"><span class="dash">–</span></td>`
+                : cell(r.jp1,r.jp1u)+cell(r.jc,r.jcu)}
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="charts">
+      <div class="ch-sec">
+        <div class="ch-title">Elektronický test</div>
+        <div class="ch-sub">Počty zkoušek per autoškola</div>
+        <div class="ch-wrap"><canvas id="chT"></canvas></div>
+      </div>
+      <div class="ch-sec">
+        <div class="ch-title">Jízdy</div>
+        <div class="ch-sub">Počty jízd per autoškola</div>
+        <div class="ch-wrap"><canvas id="chJ"></canvas></div>
+      </div>
+    </div>`;
+
+  drawYearCharts(testy, jizdy, months);
+  drawCharts(rows);
+}
+
+function drawYearCharts(testy, jizdy, months) {
+  const labels = months.map(m => MN[m].slice(0, 3));
+  const mkOpts = (d1, d2, l1, l2, color) => ({
+    type: 'bar',
+    data: { labels, datasets: [
+      { label: l1, data: d1, backgroundColor: color.replace('__A__', '.75'), borderRadius: 2 },
+      { label: l2, data: d2, backgroundColor: color.replace('__A__', '.2'),  borderRadius: 2 },
+    ]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#8b949e', font: { size: 11 } } } },
+      scales: {
+        x: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { color: '#21262d' } },
+        y: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' }, beginAtZero: true },
+      }
+    }
+  });
+
+  if (chYT) chYT.destroy();
+  if (chYJ) chYJ.destroy();
+  chYT = new Chart(document.getElementById('chYT'), mkOpts(
+    months.map(m => testy.filter(r=>r.mesic===m && r.pokus_typ==='první').length),
+    months.map(m => testy.filter(r=>r.mesic===m).length),
+    '1. pokusy', 'Celkem', 'rgba(0,229,184,__A__)'
+  ));
+  chYJ = new Chart(document.getElementById('chYJ'), mkOpts(
+    months.map(m => jizdy.filter(r=>r.mesic===m && r.pokus_typ==='první').length),
+    months.map(m => jizdy.filter(r=>r.mesic===m).length),
+    '1. pokusy', 'Celkem', 'rgba(59,130,246,__A__)'
+  ));
 }
 
 // ── MODAL ─────────────────────────────────────────────────────
