@@ -147,7 +147,8 @@ td.sc{text-align:center}
         <div class="empty"><div class="spinner"></div></div>
       </div>
       <div class="trend-panel">
-        <div class="trend-hdr">MEZIROČNÍ TREND</div>
+        <div class="trend-hdr">MEZIROČNÍ TREND – JÍZDY</div>
+        <div id="trendSlope" style="font-size:11px;color:#8b949e;margin-bottom:6px"></div>
         <div class="trend-wrap"><canvas id="chTrend"></canvas></div>
       </div>
     </div>
@@ -399,42 +400,72 @@ function drawCharts(rows) {
 }
 
 // ── TREND ─────────────────────────────────────────────────────
+function linReg(xs, ys) {
+  const n = xs.length;
+  if (n < 2) return { a: ys[0] || 0, b: 0 };
+  const mx = xs.reduce((s,x) => s+x, 0) / n;
+  const my = ys.reduce((s,y) => s+y, 0) / n;
+  const ssX = xs.reduce((s,x) => s + (x-mx)*(x-mx), 0);
+  const b   = xs.reduce((s,x,i) => s + (x-mx)*(ys[i]-my), 0) / ssX;
+  return { a: my - b*mx, b };
+}
+
 function renderTrendChart(testy, jizdy) {
-  const tByY = {}, jByY = {};
-  for (const r of testy) tByY[r.rok] = (tByY[r.rok] || 0) + 1;
+  const jByY = {};
   for (const r of jizdy) jByY[r.rok] = (jByY[r.rok] || 0) + 1;
 
-  const years = [...new Set([...Object.keys(tByY), ...Object.keys(jByY)])].map(Number).sort((a,b)=>a-b);
-  const tVals = years.map(y => tByY[y] || 0);
-  const jVals = years.map(y => jByY[y] || 0);
+  const dataYears = [...new Set(Object.keys(jByY))].map(Number).sort((a,b)=>a-b);
+  if (!dataYears.length) return;
 
   const curY = new Date().getFullYear();
-  // Poslední rok může být neúplný – vizuálně odlišíme přerušovanou čárou pro segment za předposledním bodem
-  const mkSegment = ctx => years[ctx.p1DataIndex] >= curY ? [5, 4] : undefined;
+
+  // Regrese jen na kompletních rocích (< aktuální rok)
+  const regYears = dataYears.filter(y => y < curY);
+  const regVals  = regYears.map(y => jByY[y] || 0);
+  const reg = linReg(regYears, regVals);
+
+  // Osa X: od prvního roku s daty až 2 roky dopředu
+  const endY = Math.max(dataYears[dataYears.length - 1], curY) + 2;
+  const labels = [];
+  for (let y = dataYears[0]; y <= endY; y++) labels.push(y);
+
+  const jVals     = labels.map(y => (jByY[y] !== undefined) ? jByY[y] : null);
+  const trendVals = labels.map(y => Math.max(0, Math.round(reg.a + reg.b * y)));
+
+  // Sklon trendu pod nadpisem
+  const slope = Math.round(reg.b);
+  const slopeEl = document.getElementById('trendSlope');
+  if (slopeEl) {
+    const color  = slope > 0 ? '#22c55e' : slope < 0 ? '#ef4444' : '#8b949e';
+    const sign   = slope > 0 ? '+' : '';
+    slopeEl.innerHTML = '<span style="color:' + color + '">' + sign + slope + ' jízd/rok</span>'
+      + (regYears.length >= 2 ? ' (lineární regrese, ' + regYears[0] + '–' + regYears[regYears.length-1] + ')' : '');
+  }
 
   if (chTrend) chTrend.destroy();
   chTrend = new Chart(document.getElementById('chTrend'), {
     type: 'line',
     data: {
-      labels: years,
+      labels,
       datasets: [
         {
-          label: 'Jízdy',
+          label: 'Jízdy (skutečnost)',
           data: jVals,
           borderColor: 'rgba(59,130,246,.9)',
           backgroundColor: 'rgba(59,130,246,.12)',
-          pointBackgroundColor: 'rgba(59,130,246,.9)',
-          fill: true, tension: 0.35, pointRadius: 4, pointHoverRadius: 6,
-          segment: { borderDash: mkSegment },
+          fill: true, tension: 0.3,
+          pointRadius: 4, pointHoverRadius: 6,
+          spanGaps: false,
         },
         {
-          label: 'Testy',
-          data: tVals,
-          borderColor: 'rgba(0,229,184,.85)',
+          label: 'Trend / prognóza',
+          data: trendVals,
+          borderColor: 'rgba(251,146,60,.9)',
           backgroundColor: 'transparent',
-          pointBackgroundColor: 'rgba(0,229,184,.85)',
-          fill: false, tension: 0.35, pointRadius: 4, pointHoverRadius: 6,
-          segment: { borderDash: mkSegment },
+          borderDash: [6, 4],
+          fill: false, tension: 0,
+          pointRadius: 0, pointHoverRadius: 5,
+          borderWidth: 2,
         },
       ]
     },
@@ -444,7 +475,14 @@ function renderTrendChart(testy, jizdy) {
       plugins: {
         legend: { labels: { color: '#8b949e', font: { size: 10 }, boxWidth: 10, padding: 10 } },
         tooltip: { callbacks: {
-          title: items => 'Rok ' + items[0].label,
+          title: items => {
+            const y = Number(items[0].label);
+            return 'Rok ' + y + (y > curY ? ' (prognóza)' : y === curY ? ' (rok probíhá)' : '');
+          },
+          label: item => {
+            if (item.raw === null) return null;
+            return item.dataset.label + ': ' + item.raw;
+          },
         }},
       },
       scales: {
