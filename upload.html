@@ -276,29 +276,54 @@ async function doUpload() {
     return;
   }
 
+  // Před insertem smažeme existující data pro dotčené měsíce (prevence duplicit při opakovaném uploadu)
   if (uploadMode === 'monthly') {
+    showStatus('info', 'Mažu stará data pro tento měsíc…');
     const { error: delErr } = await sb.from(table).delete().eq('mesic', uploadMesic).eq('rok', uploadRok);
     if (delErr) {
       showStatus('err', 'Chyba při mazání starých dat: ' + delErr.message);
       document.getElementById('btnUpload').disabled = false;
       return;
     }
+  } else {
+    const monthsInFile = [...new Set(rows.map(r => r.rok + '-' + String(r.mesic).padStart(2,'0')))].sort();
+    showStatus('info', `Mažu stará data pro ${monthsInFile.length} měsíců…`);
+    for (const mk of monthsInFile) {
+      const [y, m] = mk.split('-').map(Number);
+      const { error: delErr } = await sb.from(table).delete().eq('mesic', m).eq('rok', y);
+      if (delErr) {
+        showStatus('err', `Chyba při mazání dat ${m}/${y}: ` + delErr.message);
+        document.getElementById('btnUpload').disabled = false;
+        return;
+      }
+    }
   }
 
   const BATCH = 500;
+  const totalBatches = Math.ceil(rows.length / BATCH);
   let inserted = 0;
   for (let i = 0; i < rows.length; i += BATCH) {
-    showStatus('info', `Nahrávám… ${Math.min(i + BATCH, rows.length)} / ${rows.length}`);
-    const { error } = await sb.from(table).insert(rows.slice(i, i + BATCH));
+    const batchNum = Math.floor(i / BATCH) + 1;
+    const batchRows = rows.slice(i, i + BATCH);
+    showStatus('info', `Nahrávám batch ${batchNum} / ${totalBatches} · ${Math.min(i + BATCH, rows.length)} / ${rows.length} záznamů`);
+    const { error } = await sb.from(table).insert(batchRows);
     if (error) {
-      showStatus('err', 'Chyba při nahrávání: ' + error.message);
+      showStatus('err', `Chyba v batchi ${batchNum} / ${totalBatches}: ` + error.message);
       document.getElementById('btnUpload').disabled = false;
       return;
     }
-    inserted += Math.min(BATCH, rows.length - i);
+    inserted += batchRows.length;
   }
 
-  showStatus('ok', `✓ Úspěšně nahráno ${inserted.toLocaleString('cs')} záznamů.`);
+  // Souhrn nahraných záznamů po měsících
+  const monthCounts = {};
+  for (const r of rows) {
+    const k = String(r.mesic).padStart(2,'0') + '/' + r.rok;
+    monthCounts[k] = (monthCounts[k] || 0) + 1;
+  }
+  const summary = Object.keys(monthCounts).sort().map(k => k + ': ' + monthCounts[k]).join(' · ');
+
+  showStatus('ok', '✓ Nahráno ' + inserted.toLocaleString('cs') + ' záznamů<br><small style="opacity:.8">' + summary + '</small>');
   resetFile();
   loadMonths();
 }
