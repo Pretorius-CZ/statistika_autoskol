@@ -9,6 +9,17 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:#f6f8fa;color:#24292f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh;line-height:1.5}
+
+#gate{position:fixed;inset:0;background:#f6f8fa;display:flex;align-items:center;justify-content:center;z-index:9999}
+.gate-box{background:#fff;border:1px solid #d0d7de;border-radius:12px;padding:36px 32px;width:100%;max-width:340px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+.gate-icon{font-size:36px;margin-bottom:12px}
+.gate-box h2{font-size:18px;font-weight:700;margin-bottom:4px}
+.gate-box p{font-size:13px;color:#636c76;margin-bottom:22px}
+.gate-input{width:100%;padding:10px 14px;border:1px solid #d0d7de;border-radius:8px;font-size:15px;outline:none;margin-bottom:10px;transition:border-color .15s}
+.gate-input:focus{border-color:#00a693}
+.gate-btn{width:100%;padding:11px;background:#00a693;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:background .15s}
+.gate-btn:hover{background:#008c7c}
+.gate-err{font-size:13px;color:#dc2626;margin-top:8px;min-height:18px}
 .wrap{max-width:720px;margin:0 auto;padding:0 20px 60px}
 
 .back{display:inline-flex;align-items:center;gap:6px;color:#636c76;font-size:13px;text-decoration:none;padding:18px 0 4px;transition:color .15s}
@@ -59,6 +70,19 @@ input[type=file]{display:none}
 </style>
 </head>
 <body>
+
+<div id="gate">
+  <div class="gate-box">
+    <div class="gate-icon">🔒</div>
+    <h2>Chráněná sekce</h2>
+    <p>Pro přístup zadejte heslo správce</p>
+    <input id="gateInput" class="gate-input" type="password" placeholder="Heslo" onkeydown="if(event.key==='Enter')gateCheck()">
+    <button class="gate-btn" onclick="gateCheck()">Vstoupit</button>
+    <div class="gate-err" id="gateErr"></div>
+  </div>
+</div>
+
+<div id="mainContent" style="display:none">
 <div class="wrap">
 
   <a href="index.html" class="back">← Dashboard</a>
@@ -108,6 +132,30 @@ input[type=file]{display:none}
 
   <div class="footer">Dashboard statistik autoškol · Magistrát Jablonec n. N.</div>
 </div>
+</div>
+
+<script>
+(function(){
+  const PW = 'komisář';
+  if (sessionStorage.getItem('upload_auth') === '1') {
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('mainContent').style.display = '';
+  }
+  window.gateCheck = function() {
+    const val = document.getElementById('gateInput').value;
+    if (val === PW) {
+      sessionStorage.setItem('upload_auth', '1');
+      document.getElementById('gate').style.display = 'none';
+      document.getElementById('mainContent').style.display = '';
+      loadMonths();
+    } else {
+      document.getElementById('gateErr').textContent = 'Špatné heslo, zkuste znovu.';
+      document.getElementById('gateInput').value = '';
+      document.getElementById('gateInput').focus();
+    }
+  };
+})();
+</script>
 
 <script>
 const SUPA_URL = 'https://yqpqtbhknjtoyzdbsuzv.supabase.co';
@@ -381,7 +429,7 @@ function hideStatus() {
   document.getElementById('status').style.display = 'none';
 }
 
-loadMonths();
+// loadMonths() se volá po přihlášení přes bránu
 </script>
 </body>
 </html>
