@@ -1,0 +1,24 @@
+name: Supabase Keep Alive
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping zkousky_jizdy
+        run: |
+          curl -s -o /dev/null -w "%{http_code}\n" \
+          "https://yqpqtbhknjtoyzdbsuzv.supabase.co/rest/v1/zkousky_jizdy?select=id&limit=1" \
+          -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
+
+      - name: Ping zkousky_testy
+        run: |
+          curl -s -o /dev/null -w "%{http_code}\n" \
+          "https://yqpqtbhknjtoyzdbsuzv.supabase.co/rest/v1/zkousky_testy?select=id&limit=1" \
+          -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
