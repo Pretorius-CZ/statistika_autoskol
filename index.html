@@ -4,34 +4,61 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Statistiky zkoušek řidičů – Magistrát Jablonec n. N.</title>
+<script>try{const _t=localStorage.getItem('theme');if(_t)document.documentElement.dataset.theme=_t}catch(e){}</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <style>
+:root{
+  --bg:#0d1117;--sf:#161b22;--sf2:#21262d;--sf3:#1c2128;
+  --bd:#30363d;--bd2:#21262d;
+  --tx:#e6edf3;--tx2:#8b949e;--tx3:#3d444d;
+  --ac:#00e5b8;--ac-tx:#0d1117;--bl:#3b82f6;
+  --ov:rgba(0,0,0,.65);
+}
+html[data-theme="light"]{
+  --bg:#d8dde5;--sf:#f2f4f7;--sf2:#e6eaee;--sf3:#dde1e7;
+  --bd:#b0bac6;--bd2:#c8d0da;
+  --tx:#1a1d23;--tx2:#4d5663;--tx3:#9ba6b4;
+  --ac:#009985;--ac-tx:#ffffff;--bl:#1d4ed8;
+  --ov:rgba(0,0,0,.4);
+}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{background:#0d1117;color:#e6edf3;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh;line-height:1.5}
+body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh;line-height:1.5;transition:background .25s,color .25s}
 .wrap{max-width:1200px;margin:0 auto;padding:0 20px}
 
 /* HEADER */
-.hdr{background:#161b22;border-bottom:1px solid #30363d;padding:14px 0}
+.hdr{background:var(--sf);border-bottom:1px solid var(--bd);padding:14px 0;transition:background .25s,border-color .25s}
 .hdr-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
 .hdr-brand{display:flex;align-items:center;gap:12px}
-.hdr-logo{width:40px;height:40px;background:#00e5b8;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#0d1117;flex-shrink:0}
-.hdr-title h1{font-size:17px;font-weight:600}
-.hdr-title p{font-size:12px;color:#8b949e}
-#hdrPeriod{font-size:18px;font-weight:600;color:#00e5b8}
+.hdr-logo{width:44px;height:44px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.hdr-logo img{width:44px;height:44px;object-fit:contain}
+.hdr-title h1{font-size:19px;font-weight:600}
+.hdr-title p{font-size:14px;color:var(--tx2)}
+#hdrPeriod{font-size:20px;font-weight:600;color:var(--ac)}
 .hdr-actions{display:flex;align-items:center;gap:10px}
-.btn-ghost{display:flex;align-items:center;gap:6px;background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:7px 14px;border-radius:6px;cursor:pointer;font-size:13px;text-decoration:none;transition:background .15s}
-.btn-ghost:hover{background:#30363d}
+.btn-ghost{display:flex;align-items:center;gap:6px;background:var(--sf2);border:1px solid var(--bd);color:var(--tx);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:15px;text-decoration:none;transition:background .15s,border-color .15s,color .15s}
+.btn-ghost:hover{background:var(--bd)}
+.theme-toggle{width:34px;height:34px;border-radius:50%;background:var(--sf2);border:1px solid var(--bd);color:var(--tx);font-size:16px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.theme-toggle:hover{background:var(--bd);transform:rotate(20deg)}
 
 /* MONTH SELECTOR */
-.months-bar{background:#161b22;border-bottom:1px solid #30363d;padding:14px 0}
-.month-grid{display:flex;flex-direction:column;gap:5px}
+.months-bar{background:var(--sf);border-bottom:1px solid var(--bd);padding:14px 0;transition:background .25s,border-color .25s}
+.months-bar-inner{display:flex;align-items:flex-start;gap:28px}
+.month-grid{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
 .month-row{display:flex;align-items:center;gap:5px}
-.yr-lbl{width:38px;font-size:12px;color:#8b949e;flex-shrink:0}
-.mbtn{width:26px;height:26px;border-radius:4px;border:1px solid transparent;background:transparent;color:#3d444d;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.mbtn.has{color:#e6edf3;border-color:#30363d}
-.mbtn.has:hover{background:#21262d}
-.mbtn.active{background:#00e5b8!important;color:#0d1117;font-weight:700;border-color:#00e5b8}
+.trend-panel{flex:1;min-width:180px}
+.trend-hdr{font-size:13px;font-weight:700;letter-spacing:.06em;color:var(--tx2);margin-bottom:8px}
+.trend-wrap{position:relative;height:160px}
+@media(max-width:820px){.months-bar-inner{flex-direction:column}.trend-panel{width:100%}}
+.yr-btn{width:38px;height:26px;border-radius:4px;border:1px solid transparent;background:transparent;color:var(--tx3);font-size:14px;cursor:pointer;flex-shrink:0;transition:all .15s}
+.yr-btn.has{color:var(--tx2);border-color:var(--bd)}
+.yr-btn.has:hover{background:var(--sf2);color:var(--tx)}
+.yr-btn.yr-active{background:var(--ac)!important;color:var(--ac-tx);font-weight:700;border-color:var(--ac)}
+.yr-btn:disabled{cursor:not-allowed;opacity:.3}
+.mbtn{width:28px;height:28px;border-radius:4px;border:1px solid transparent;background:transparent;color:var(--tx3);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.mbtn.has{color:var(--tx);border-color:var(--bd)}
+.mbtn.has:hover{background:var(--sf2)}
+.mbtn.active{background:var(--ac)!important;color:var(--ac-tx);font-weight:700;border-color:var(--ac)}
 .mbtn:disabled{cursor:not-allowed;opacity:.3}
 
 /* MAIN */
@@ -40,68 +67,68 @@ body{background:#0d1117;color:#e6edf3;font-family:-apple-system,BlinkMacSystemFo
 /* CARDS */
 .cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
 @media(max-width:600px){.cards{grid-template-columns:1fr}}
-.card{background:#161b22;border:1px solid #30363d;border-radius:10px;overflow:hidden}
-.card-hdr{padding:11px 18px;font-size:12px;font-weight:700;letter-spacing:.06em;border-bottom:1px solid #30363d}
-.card-hdr.t{color:#00e5b8}
-.card-hdr.j{color:#3b82f6}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:10px;overflow:hidden;transition:background .25s,border-color .25s}
+.card-hdr{padding:11px 18px;font-size:14px;font-weight:700;letter-spacing:.06em;border-bottom:1px solid var(--bd)}
+.card-hdr.t{color:var(--ac)}
+.card-hdr.j{color:var(--bl)}
 .card-body{display:grid;grid-template-columns:1fr 1fr}
-.ci{padding:14px 18px;border-right:1px solid #30363d;border-bottom:1px solid #30363d}
+.ci{padding:14px 18px;border-right:1px solid var(--bd);border-bottom:1px solid var(--bd)}
 .ci:nth-child(2n){border-right:none}
 .ci:nth-child(3),.ci:nth-child(4){border-bottom:none}
-.ci-lbl{font-size:11px;color:#8b949e;margin-bottom:5px}
-.ci-val{font-size:26px;font-weight:700;line-height:1}
-.ci-pct{font-size:13px;color:#8b949e;margin-left:7px}
+.ci-lbl{font-size:13px;color:var(--tx2);margin-bottom:5px}
+.ci-val{font-size:28px;font-weight:700;line-height:1}
+.ci-pct{font-size:15px;color:var(--tx2);margin-left:7px}
 
 /* TABLE */
-.sec{background:#161b22;border:1px solid #30363d;border-radius:10px;overflow:hidden;margin-bottom:20px}
-.sec-hdr{padding:14px 18px;border-bottom:1px solid #30363d}
-.sec-hdr h2{font-size:15px;font-weight:600}
-.sec-hdr p{font-size:12px;color:#8b949e}
+.sec{background:var(--sf);border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:20px;transition:background .25s,border-color .25s}
+.sec-hdr{padding:14px 18px;border-bottom:1px solid var(--bd)}
+.sec-hdr h2{font-size:17px;font-weight:600}
+.sec-hdr p{font-size:14px;color:var(--tx2)}
 .tbl-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse}
-thead th{padding:9px 14px;text-align:left;font-size:11px;color:#8b949e;font-weight:600;letter-spacing:.05em;border-bottom:1px solid #30363d;white-space:nowrap}
+thead th{padding:10px 14px;text-align:left;font-size:15px;color:var(--tx2);font-weight:600;letter-spacing:.05em;border-bottom:1px solid var(--bd);white-space:nowrap}
 thead th:not(:first-child){text-align:center}
-tbody tr{border-bottom:1px solid #21262d}
+tbody tr{border-bottom:1px solid var(--bd2)}
 tbody tr:last-child{border-bottom:none}
-tbody tr:hover{background:#1c2128}
-td{padding:11px 14px;font-size:13px}
+tbody tr:hover{background:var(--sf3)}
+td{padding:12px 14px;font-size:15px}
 td.nm{font-weight:500}
 td.sc{text-align:center}
-.cn{font-weight:700;font-size:14px;display:block}
-.cp{font-size:11px;display:block;margin-top:1px}
+.cn{font-weight:700;font-size:16px;display:block}
+.cp{font-size:13px;display:block;margin-top:2px}
 .pg{color:#22c55e}
 .pm{color:#f59e0b}
 .pb{color:#ef4444}
-.dash{color:#3d444d}
+.dash{color:var(--tx3)}
 
 /* CHARTS */
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
 @media(max-width:700px){.charts{grid-template-columns:1fr}}
-.ch-sec{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:18px}
-.ch-title{font-size:13px;font-weight:600;margin-bottom:2px}
-.ch-sub{font-size:11px;color:#8b949e;margin-bottom:14px}
+.ch-sec{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:18px;transition:background .25s,border-color .25s}
+.ch-title{font-size:15px;font-weight:600;margin-bottom:2px}
+.ch-sub{font-size:13px;color:var(--tx2);margin-bottom:14px}
 .ch-wrap{position:relative;height:210px}
 
 /* STATES */
-.empty{text-align:center;padding:50px 20px;color:#8b949e}
-.spinner{width:28px;height:28px;border:3px solid #30363d;border-top-color:#00e5b8;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+.empty{text-align:center;padding:50px 20px;color:var(--tx2)}
+.spinner{width:28px;height:28px;border:3px solid var(--bd);border-top-color:var(--ac);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* AS LINK */
-.as-link{background:none;border:none;color:#e6edf3;font-size:13px;font-weight:500;cursor:pointer;padding:0;text-align:left;text-decoration:underline;text-decoration-color:#30363d;text-underline-offset:3px}
-.as-link:hover{color:#00e5b8;text-decoration-color:#00e5b8}
+.as-link{background:none;border:none;color:var(--tx);font-size:15px;font-weight:500;cursor:pointer;padding:0;text-align:left;text-decoration:underline;text-decoration-color:var(--bd);text-underline-offset:3px}
+.as-link:hover{color:var(--ac);text-decoration-color:var(--ac)}
 
 /* MODAL */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
-.modal{background:#161b22;border:1px solid #30363d;border-radius:12px;width:100%;max-width:700px;max-height:88vh;overflow-y:auto}
-.modal-hdr{padding:16px 20px;border-bottom:1px solid #30363d;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#161b22;z-index:1}
-.modal-hdr h2{font-size:15px;font-weight:600}
-.modal-close{background:none;border:none;color:#8b949e;font-size:22px;cursor:pointer;line-height:1;padding:2px 6px}
-.modal-close:hover{color:#e6edf3}
+.modal-bg{position:fixed;inset:0;background:var(--ov);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:var(--sf);border:1px solid var(--bd);border-radius:12px;width:100%;max-width:700px;max-height:88vh;overflow-y:auto}
+.modal-hdr{padding:16px 20px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--sf);z-index:1}
+.modal-hdr h2{font-size:17px;font-weight:600}
+.modal-close{background:none;border:none;color:var(--tx2);font-size:22px;cursor:pointer;line-height:1;padding:2px 6px}
+.modal-close:hover{color:var(--tx)}
 .modal-body{padding:20px}
 .modal-section{margin-bottom:20px}
-.modal-section h3{font-size:12px;font-weight:700;letter-spacing:.06em;color:#8b949e;margin-bottom:10px}
-.yoy-up{color:#22c55e}.yoy-dn{color:#ef4444}.yoy-eq{color:#8b949e}
+.modal-section h3{font-size:14px;font-weight:700;letter-spacing:.06em;color:var(--tx2);margin-bottom:10px}
+.yoy-up{color:#22c55e}.yoy-dn{color:#ef4444}.yoy-eq{color:var(--tx2)}
 
 @media print{
   .months-bar,.hdr-actions{display:none}
@@ -115,7 +142,7 @@ td.sc{text-align:center}
   <div class="wrap">
     <div class="hdr-inner">
       <div class="hdr-brand">
-        <div class="hdr-logo">ňo</div>
+        <div class="hdr-logo"><img src="logo.png" alt="Znak Jablonec n. N."></div>
         <div class="hdr-title">
           <h1>Statistiky zkoušek řidičů</h1>
           <p>Magistrát Jablonec nad Nisou</p>
@@ -125,6 +152,7 @@ td.sc{text-align:center}
       <div class="hdr-actions">
         <a href="upload.html" class="btn-ghost">↑ Nahrát data</a>
         <button class="btn-ghost" onclick="window.print()">↓ Export PDF</button>
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Přepnout světlý / tmavý vzhled">☀</button>
       </div>
     </div>
   </div>
@@ -132,8 +160,15 @@ td.sc{text-align:center}
 
 <div class="months-bar">
   <div class="wrap">
-    <div id="monthGrid" class="month-grid">
-      <div class="empty"><div class="spinner"></div></div>
+    <div class="months-bar-inner">
+      <div id="monthGrid" class="month-grid">
+        <div class="empty"><div class="spinner"></div></div>
+      </div>
+      <div class="trend-panel">
+        <div class="trend-hdr">MEZIROČNÍ TREND – JÍZDY</div>
+        <div id="trendSlope" style="font-size:13px;color:var(--tx2);margin-bottom:6px"></div>
+        <div class="trend-wrap"><canvas id="chTrend"></canvas></div>
+      </div>
     </div>
   </div>
 </div>
@@ -164,34 +199,86 @@ try {
   sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
 } catch(e) {
   document.getElementById('monthGrid').innerHTML =
-    `<div class="empty" style="color:#ef4444">Chyba inicializace Supabase: ${e.message}</div>`;
+    '<div class="empty" style="color:#ef4444">Chyba inicializace Supabase: ' + e.message + '</div>';
 }
 
 const MN = ['','Leden','Únor','Březen','Duben','Květen','Červen','Červenec','Srpen','Září','Říjen','Listopad','Prosinec'];
 const YEARS = [2021,2022,2023,2024,2025,2026];
 
 let selM = null, selY = null;
-let chT = null, chJ = null;
+let chT = null, chJ = null, chYT = null, chYJ = null, chTrend = null;
 let available = new Set();
+let trendData   = { jizdy: [] };
+let currentView = null;
+
+// ── THEME ─────────────────────────────────────────────────────
+function tchk() {
+  const s = getComputedStyle(document.documentElement);
+  return {
+    grid: s.getPropertyValue('--bd2').trim(),
+    tick: s.getPropertyValue('--tx2').trim(),
+    sf:   s.getPropertyValue('--sf').trim(),
+    bd:   s.getPropertyValue('--bd').trim(),
+    tx:   s.getPropertyValue('--tx').trim(),
+  };
+}
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const goLight = html.dataset.theme !== 'light';
+  html.dataset.theme = goLight ? 'light' : '';
+  try { localStorage.setItem('theme', html.dataset.theme); } catch(e) {}
+  document.getElementById('themeToggle').textContent = goLight ? '🌙' : '☀';
+  renderTrendChart(trendData.jizdy);
+  if (currentView) {
+    if (currentView.type === 'month') render(currentView.testy, currentView.jizdy);
+    else renderYear(currentView.testy, currentView.jizdy, currentView.y);
+  }
+}
+
+// Set button icon on load
+(function() {
+  const t = document.documentElement.dataset.theme || '';
+  document.getElementById('themeToggle').textContent = t === 'light' ? '🌙' : '☀';
+})();
+
+// ── DATA ──────────────────────────────────────────────────────
+async function fetchAllPages(table, columns, filter) {
+  const all = [];
+  const PAGE = 1000;
+  let from = 0;
+  while (true) {
+    let q = sb.from(table).select(columns).range(from, from + PAGE - 1);
+    if (filter) { for (const [k, v] of Object.entries(filter)) q = q.eq(k, v); }
+    const { data, error } = await q;
+    if (error) return { data: null, error };
+    if (!data || data.length === 0) break;
+    all.push(...data);
+    if (data.length < PAGE) break;
+    from += PAGE;
+  }
+  return { data: all, error: null };
+}
 
 async function init() {
   if (!sb) return;
   const [rt, rj] = await Promise.all([
-    sb.from('zkousky_testy').select('mesic,rok'),
-    sb.from('zkousky_jizdy').select('mesic,rok'),
+    fetchAllPages('zkousky_testy', 'mesic,rok'),
+    fetchAllPages('zkousky_jizdy', 'mesic,rok'),
   ]);
   if (rt.error || rj.error) {
     const msg = (rt.error || rj.error).message;
-    console.error('Supabase chyba:', rt.error, rj.error);
     document.getElementById('monthGrid').innerHTML =
-      `<div class="empty" style="color:#ef4444">Chyba spojení s databází: ${msg}</div>`;
+      '<div class="empty" style="color:#ef4444">Chyba spojení s databází: ' + msg + '</div>';
     return;
   }
   available = new Set([...(rt.data||[]),...(rj.data||[])].map(r=>`${r.rok}-${r.mesic}`));
+  trendData = { jizdy: rj.data || [] };
   renderGrid();
+  renderTrendChart(trendData.jizdy);
   if (!available.size) {
     document.getElementById('content').innerHTML =
-      `<div class="empty">Databáze je prázdná – nahrajte data přes <a href="upload.html" style="color:#00e5b8">Nahrát data</a>.</div>`;
+      '<div class="empty">Databáze je prázdná – nahrajte data přes <a href="upload.html" style="color:var(--ac)">Nahrát data</a>.</div>';
     return;
   }
   const sorted = [...available].sort((a,b)=>{
@@ -203,40 +290,44 @@ async function init() {
 }
 
 function renderGrid() {
-  document.getElementById('monthGrid').innerHTML = YEARS.map(y =>
-    `<div class="month-row">
-      <span class="yr-lbl">${y}</span>
-      ${Array.from({length:12},(_,i)=>i+1).map(m => {
-        const has = available.has(`${y}-${m}`);
-        const act = selM===m && selY===y;
-        return `<button class="mbtn${has?' has':''}${act?' active':''}"
-          ${!has?'disabled':''}
-          onclick="pick(${m},${y})"
-          title="${MN[m]} ${y}">${m}</button>`;
-      }).join('')}
-    </div>`
-  ).join('');
+  document.getElementById('monthGrid').innerHTML = YEARS.map(y => {
+    const yearHas = [...available].some(k => k.startsWith(`${y}-`));
+    const yearAct = selM === null && selY === y;
+    return '<div class="month-row">'
+      + '<button class="yr-btn' + (yearHas?' has':'') + (yearAct?' yr-active':'') + '"'
+      + (!yearHas?' disabled':'')
+      + ' onclick="pickYear(' + y + ')" title="Rok ' + y + '">' + y + '</button>'
+      + Array.from({length:12},(_,i)=>i+1).map(m => {
+          const has = available.has(`${y}-${m}`);
+          const act = selM===m && selY===y;
+          return '<button class="mbtn' + (has?' has':'') + (act?' active':'') + '"'
+            + (!has?' disabled':'')
+            + ' onclick="pick(' + m + ',' + y + ')" title="' + MN[m] + ' ' + y + '">' + m + '</button>';
+        }).join('')
+      + '</div>';
+  }).join('');
 }
 
 async function pick(m, y) {
   selM = m; selY = y;
   renderGrid();
   document.getElementById('hdrPeriod').textContent = `${MN[m]} ${y}`;
-  document.getElementById('content').innerHTML = `<div class="empty"><div class="spinner"></div>Načítám data…</div>`;
+  document.getElementById('content').innerHTML = '<div class="empty"><div class="spinner"></div>Načítám data…</div>';
 
   const [rt, rj] = await Promise.all([
-    sb.from('zkousky_testy').select('autoskola,pokus_typ,hodnoceni').eq('mesic',m).eq('rok',y).limit(50000),
-    sb.from('zkousky_jizdy').select('autoskola,pokus_typ,hodnoceni').eq('mesic',m).eq('rok',y).limit(50000),
+    fetchAllPages('zkousky_testy', 'autoskola,pokus_typ,hodnoceni', {mesic: m, rok: y}),
+    fetchAllPages('zkousky_jizdy', 'autoskola,pokus_typ,hodnoceni', {mesic: m, rok: y}),
   ]);
 
   if (rt.error || rj.error) {
-    document.getElementById('content').innerHTML = `<div class="empty">Chyba při načítání dat.</div>`;
-    console.error(rt.error, rj.error);
+    document.getElementById('content').innerHTML = '<div class="empty">Chyba při načítání dat.</div>';
     return;
   }
+  currentView = { type: 'month', testy: rt.data||[], jizdy: rj.data||[], m, y };
   render(rt.data||[], rj.data||[]);
 }
 
+// ── AGGREGATION ───────────────────────────────────────────────
 function agg(data) {
   const p = data.filter(r=>r.pokus_typ==='první');
   return {
@@ -255,11 +346,12 @@ function cls(p){
 }
 
 function cell(att, usp) {
-  if(!att) return `<td class="sc"><span class="dash">–</span></td>`;
+  if(!att) return '<td class="sc"><span class="dash">–</span></td>';
   const p = pct(usp,att);
-  return `<td class="sc"><span class="cn">${att}</span><span class="cp ${cls(p)}">${p!==null?p+' %':'–'}</span></td>`;
+  return '<td class="sc"><span class="cn">' + att + '</span><span class="cp ' + cls(p) + '">' + (p!==null?p+' %':'–') + '</span></td>';
 }
 
+// ── MONTH VIEW ────────────────────────────────────────────────
 function render(testy, jizdy) {
   const ts = agg(testy), js = agg(jizdy);
 
@@ -279,65 +371,43 @@ function render(testy, jizdy) {
     };
   });
 
-  const cardRow = (s, cls1) => `
-    <div class="card">
-      <div class="card-hdr ${cls1}">${cls1==='t'?'ELEKTRONICKÝ TEST':'JÍZDY'}</div>
-      <div class="card-body">
-        <div class="ci"><div class="ci-lbl">1. pokusy celkem</div><div class="ci-val">${s.p1}</div></div>
-        <div class="ci"><div class="ci-lbl">Úspěšní v 1. pokusu</div><div class="ci-val">${s.p1u}<span class="ci-pct">${pct(s.p1u,s.p1)??'–'} %</span></div></div>
-        <div class="ci"><div class="ci-lbl">${cls1==='t'?'Zkoušky celkem':'Jízdy celkem'}</div><div class="ci-val">${s.cel}</div></div>
-        <div class="ci"><div class="ci-lbl">Celkem úspěšní</div><div class="ci-val">${s.celu}<span class="ci-pct">${pct(s.celu,s.cel)??'–'} %</span></div></div>
-      </div>
-    </div>`;
+  const cardRow = (s, c) => '<div class="card">'
+    + '<div class="card-hdr ' + c + '">' + (c==='t'?'ELEKTRONICKÝ TEST':'JÍZDY') + '</div>'
+    + '<div class="card-body">'
+    + '<div class="ci"><div class="ci-lbl">1. pokusy celkem</div><div class="ci-val">' + s.p1 + '</div></div>'
+    + '<div class="ci"><div class="ci-lbl">Úspěšní v 1. pokusu</div><div class="ci-val">' + s.p1u + '<span class="ci-pct">' + (pct(s.p1u,s.p1)??'–') + ' %</span></div></div>'
+    + '<div class="ci"><div class="ci-lbl">' + (c==='t'?'Zkoušky celkem':'Jízdy celkem') + '</div><div class="ci-val">' + s.cel + '</div></div>'
+    + '<div class="ci"><div class="ci-lbl">Celkem úspěšní</div><div class="ci-val">' + s.celu + '<span class="ci-pct">' + (pct(s.celu,s.cel)??'–') + ' %</span></div></div>'
+    + '</div></div>';
 
-  document.getElementById('content').innerHTML = `
-    <div class="cards">${cardRow(ts,'t')}${cardRow(js,'j')}</div>
-
-    <div class="sec">
-      <div class="sec-hdr"><h2>Přehled autoškol</h2><p>Seřazeno abecedně</p></div>
-      <div class="tbl-wrap">
-        <table>
-          <thead><tr>
-            <th>AUTOŠKOLA</th>
-            <th style="color:#00e5b8">T 1.p.</th>
-            <th style="color:#00e5b8">T cel.</th>
-            <th style="color:#3b82f6">J 1.p.</th>
-            <th style="color:#3b82f6">J cel.</th>
-          </tr></thead>
-          <tbody>
-            ${rows.map(r=>`<tr>
-              <td class="nm"><button class="as-link" data-as="${r.as.replace(/"/g,'&quot;')}" onclick="openModal(this.dataset.as)">${r.as}</button></td>
-              ${r.tc===0&&r.tp1===0
-                ? `<td class="sc"><span class="dash">–</span></td><td class="sc"><span class="dash">–</span></td>`
-                : cell(r.tp1,r.tp1u)+cell(r.tc,r.tcu)}
-              ${r.jc===0&&r.jp1===0
-                ? `<td class="sc"><span class="dash">–</span></td><td class="sc"><span class="dash">–</span></td>`
-                : cell(r.jp1,r.jp1u)+cell(r.jc,r.jcu)}
-            </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="charts">
-      <div class="ch-sec">
-        <div class="ch-title">Elektronický test</div>
-        <div class="ch-sub">Počty zkoušek per autoškola</div>
-        <div class="ch-wrap"><canvas id="chT"></canvas></div>
-      </div>
-      <div class="ch-sec">
-        <div class="ch-title">Jízdy</div>
-        <div class="ch-sub">Počty jízd per autoškola</div>
-        <div class="ch-wrap"><canvas id="chJ"></canvas></div>
-      </div>
-    </div>`;
+  document.getElementById('content').innerHTML =
+    '<div class="cards">' + cardRow(ts,'t') + cardRow(js,'j') + '</div>'
+    + '<div class="sec"><div class="sec-hdr"><h2>Přehled autoškol</h2><p>Seřazeno abecedně</p></div>'
+    + '<div class="tbl-wrap"><table><thead><tr>'
+    + '<th>AUTOŠKOLA</th>'
+    + '<th style="color:var(--ac)">1.testů</th>'
+    + '<th style="color:var(--ac)">Celkem testů</th>'
+    + '<th style="color:var(--bl)">1.jízd</th>'
+    + '<th style="color:var(--bl)">Celkem jízd</th>'
+    + '</tr></thead><tbody>'
+    + rows.map(r => '<tr>'
+        + '<td class="nm"><button class="as-link" data-as="' + r.as.replace(/"/g,'&quot;') + '" onclick="openModal(this.dataset.as)">' + r.as + '</button></td>'
+        + (r.tc===0&&r.tp1===0 ? '<td class="sc"><span class="dash">–</span></td><td class="sc"><span class="dash">–</span></td>' : cell(r.tp1,r.tp1u)+cell(r.tc,r.tcu))
+        + (r.jc===0&&r.jp1===0 ? '<td class="sc"><span class="dash">–</span></td><td class="sc"><span class="dash">–</span></td>' : cell(r.jp1,r.jp1u)+cell(r.jc,r.jcu))
+        + '</tr>').join('')
+    + '</tbody></table></div></div>'
+    + '<div class="charts">'
+    + '<div class="ch-sec"><div class="ch-title">Elektronický test</div><div class="ch-sub">Počty zkoušek per autoškola</div><div class="ch-wrap"><canvas id="chT"></canvas></div></div>'
+    + '<div class="ch-sec"><div class="ch-title">Jízdy</div><div class="ch-sub">Počty jízd per autoškola</div><div class="ch-wrap"><canvas id="chJ"></canvas></div></div>'
+    + '</div>';
 
   drawCharts(rows);
 }
 
 function drawCharts(rows) {
   const labels = rows.map(r => r.as.length>16 ? r.as.slice(0,15)+'…' : r.as);
-  const opts = (d1, d2, l1, l2) => ({
+  const {grid, tick, sf, bd, tx} = tchk();
+  const mkOpts = (d1, d2, l1, l2) => ({
     type:'bar',
     data:{labels, datasets:[
       {label:l1, data:d1, backgroundColor:'rgba(0,229,184,.75)', borderRadius:2},
@@ -345,18 +415,259 @@ function drawCharts(rows) {
     ]},
     options:{
       responsive:true, maintainAspectRatio:false,
-      plugins:{legend:{labels:{color:'#8b949e',font:{size:11}}}},
+      plugins:{
+        legend:{labels:{color:tick,font:{size:11}}},
+        tooltip:{backgroundColor:sf,titleColor:tx,bodyColor:tick,borderColor:bd,borderWidth:1},
+      },
       scales:{
-        x:{ticks:{color:'#8b949e',font:{size:9},maxRotation:50},grid:{color:'#21262d'}},
-        y:{ticks:{color:'#8b949e'},grid:{color:'#21262d'},beginAtZero:true},
+        x:{ticks:{color:tick,font:{size:9},maxRotation:50},grid:{color:grid}},
+        y:{ticks:{color:tick},grid:{color:grid},beginAtZero:true},
       }
     }
   });
 
   if(chT) chT.destroy();
   if(chJ) chJ.destroy();
-  chT = new Chart(document.getElementById('chT'), opts(rows.map(r=>r.tp1), rows.map(r=>r.tc), '1. pokusy','Zkoušky celkem'));
-  chJ = new Chart(document.getElementById('chJ'), opts(rows.map(r=>r.jp1), rows.map(r=>r.jc), '1. pokusy','Jízdy celkem'));
+  chT = new Chart(document.getElementById('chT'), mkOpts(rows.map(r=>r.tp1), rows.map(r=>r.tc), '1. pokusy','Zkoušky celkem'));
+  chJ = new Chart(document.getElementById('chJ'), mkOpts(rows.map(r=>r.jp1), rows.map(r=>r.jc), '1. pokusy','Jízdy celkem'));
+}
+
+// ── TREND ─────────────────────────────────────────────────────
+function linReg(xs, ys) {
+  const n = xs.length;
+  if (n < 2) return { a: ys[0] || 0, b: 0 };
+  const mx = xs.reduce((s,x) => s+x, 0) / n;
+  const my = ys.reduce((s,y) => s+y, 0) / n;
+  const ssX = xs.reduce((s,x) => s + (x-mx)*(x-mx), 0);
+  const b   = xs.reduce((s,x,i) => s + (x-mx)*(ys[i]-my), 0) / ssX;
+  return { a: my - b*mx, b };
+}
+
+function renderTrendChart(jizdy) {
+  const jByY = {};
+  for (const r of jizdy) jByY[r.rok] = (jByY[r.rok] || 0) + 1;
+
+  const dataYears = [...new Set(Object.keys(jByY))].map(Number).sort((a,b)=>a-b);
+  if (!dataYears.length) return;
+
+  const curY = new Date().getFullYear();
+  const regYears = dataYears.filter(y => y < curY);
+  const regVals  = regYears.map(y => jByY[y] || 0);
+  const reg = linReg(regYears, regVals);
+
+  const endY = Math.max(dataYears[dataYears.length - 1], curY) + 2;
+  const labels = [];
+  for (let y = dataYears[0]; y <= endY; y++) labels.push(y);
+
+  const jVals     = labels.map(y => (jByY[y] !== undefined) ? jByY[y] : null);
+  const trendVals = labels.map(y => Math.max(0, Math.round(reg.a + reg.b * y)));
+
+  const slope = Math.round(reg.b);
+  const slopeEl = document.getElementById('trendSlope');
+  if (slopeEl) {
+    const color  = slope > 0 ? '#22c55e' : slope < 0 ? '#ef4444' : 'var(--tx2)';
+    const sign   = slope > 0 ? '+' : '';
+    slopeEl.innerHTML = '<span style="color:' + color + '">' + sign + slope + ' jízd/rok</span>'
+      + (regYears.length >= 2 ? ' <span style="color:var(--tx2)">(regrese ' + regYears[0] + '–' + regYears[regYears.length-1] + ')</span>' : '');
+  }
+
+  const {grid, tick, sf, bd, tx} = tchk();
+  if (chTrend) chTrend.destroy();
+  chTrend = new Chart(document.getElementById('chTrend'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Jízdy (skutečnost)',
+          data: jVals,
+          borderColor: 'rgba(59,130,246,.9)',
+          backgroundColor: 'rgba(59,130,246,.12)',
+          fill: true, tension: 0.3,
+          pointRadius: 4, pointHoverRadius: 6,
+          spanGaps: false,
+        },
+        {
+          label: 'Trend / prognóza',
+          data: trendVals,
+          borderColor: 'rgba(251,146,60,.9)',
+          backgroundColor: 'transparent',
+          borderDash: [6, 4],
+          fill: false, tension: 0,
+          pointRadius: 0, pointHoverRadius: 5,
+          borderWidth: 2,
+        },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { labels: { color: tick, font: { size: 10 }, boxWidth: 10, padding: 10 } },
+        tooltip: {
+          backgroundColor: sf, titleColor: tx, bodyColor: tick, borderColor: bd, borderWidth: 1,
+          callbacks: {
+            title: items => {
+              const y = Number(items[0].label);
+              return 'Rok ' + y + (y > curY ? ' (prognóza)' : y === curY ? ' (rok probíhá)' : '');
+            },
+            label: item => item.raw === null ? null : item.dataset.label + ': ' + item.raw,
+          },
+        },
+      },
+      scales: {
+        x: { ticks: { color: tick, font: { size: 10 } }, grid: { color: grid } },
+        y: { ticks: { color: tick, font: { size: 10 } }, grid: { color: grid }, beginAtZero: true },
+      }
+    }
+  });
+}
+
+// ── ROK ───────────────────────────────────────────────────────
+async function pickYear(y) {
+  selY = y; selM = null;
+  renderGrid();
+  document.getElementById('hdrPeriod').textContent = `Rok ${y}`;
+  document.getElementById('content').innerHTML = '<div class="empty"><div class="spinner"></div>Načítám data…</div>';
+
+  const [rt, rj] = await Promise.all([
+    fetchAllPages('zkousky_testy', 'autoskola,pokus_typ,hodnoceni,mesic', {rok: y}),
+    fetchAllPages('zkousky_jizdy', 'autoskola,pokus_typ,hodnoceni,mesic', {rok: y}),
+  ]);
+
+  if (rt.error || rj.error) {
+    document.getElementById('content').innerHTML = '<div class="empty">Chyba při načítání dat.</div>';
+    return;
+  }
+  currentView = { type: 'year', testy: rt.data||[], jizdy: rj.data||[], y };
+  renderYear(rt.data || [], rj.data || [], y);
+}
+
+function renderYear(testy, jizdy, y) {
+  const ts = agg(testy), js = agg(jizdy);
+
+  const allAS = [...new Set([...testy,...jizdy].map(r=>r.autoskola))].sort((a,b)=>a.localeCompare(b,'cs'));
+  const rows = allAS.map(as => {
+    const t = testy.filter(r=>r.autoskola===as);
+    const j = jizdy.filter(r=>r.autoskola===as);
+    const tp = t.filter(r=>r.pokus_typ==='první');
+    const jp = j.filter(r=>r.pokus_typ==='první');
+    return {
+      as,
+      tp1:tp.length, tp1u:tp.filter(r=>r.hodnoceni==='prospěl').length,
+      tc: t.length,  tcu: t.filter(r=>r.hodnoceni==='prospěl').length,
+      jp1:jp.length, jp1u:jp.filter(r=>r.hodnoceni==='prospěl').length,
+      jc: j.length,  jcu: j.filter(r=>r.hodnoceni==='prospěl').length,
+    };
+  });
+
+  const months = [...new Set([...testy,...jizdy].map(r=>r.mesic))].sort((a,b)=>a-b);
+
+  const cardRow = (s, c) => '<div class="card">'
+    + '<div class="card-hdr ' + c + '">' + (c==='t'?'ELEKTRONICKÝ TEST':'JÍZDY') + '</div>'
+    + '<div class="card-body">'
+    + '<div class="ci"><div class="ci-lbl">1. pokusy celkem</div><div class="ci-val">' + s.p1 + '</div></div>'
+    + '<div class="ci"><div class="ci-lbl">Úspěšní v 1. pokusu</div><div class="ci-val">' + s.p1u + '<span class="ci-pct">' + (pct(s.p1u,s.p1)??'–') + ' %</span></div></div>'
+    + '<div class="ci"><div class="ci-lbl">' + (c==='t'?'Zkoušky celkem':'Jízdy celkem') + '</div><div class="ci-val">' + s.cel + '</div></div>'
+    + '<div class="ci"><div class="ci-lbl">Celkem úspěšní</div><div class="ci-val">' + s.celu + '<span class="ci-pct">' + (pct(s.celu,s.cel)??'–') + ' %</span></div></div>'
+    + '</div></div>';
+
+  const dash = '<span class="dash">–</span>';
+  const monthRows = months.map(m => {
+    const tm = testy.filter(r=>r.mesic===m);
+    const jm = jizdy.filter(r=>r.mesic===m);
+    const tp = pct(tm.filter(r=>r.hodnoceni==='prospěl').length, tm.length);
+    const jp = pct(jm.filter(r=>r.hodnoceni==='prospěl').length, jm.length);
+    const tp1 = tm.filter(r=>r.pokus_typ==='první').length;
+    const jp1 = jm.filter(r=>r.pokus_typ==='první').length;
+    return '<tr>'
+      + '<td class="nm">' + MN[m] + '</td>'
+      + '<td class="sc">' + (tp1 || dash) + '</td>'
+      + '<td class="sc">' + (tm.length || dash) + '</td>'
+      + '<td class="sc"><span class="' + cls(tp) + '">' + (tp !== null ? tp + ' %' : dash) + '</span></td>'
+      + '<td class="sc">' + (jp1 || dash) + '</td>'
+      + '<td class="sc">' + (jm.length || dash) + '</td>'
+      + '<td class="sc"><span class="' + cls(jp) + '">' + (jp !== null ? jp + ' %' : dash) + '</span></td>'
+      + '</tr>';
+  }).join('');
+
+  document.getElementById('content').innerHTML =
+    '<div class="cards">' + cardRow(ts,'t') + cardRow(js,'j') + '</div>'
+
+    + '<div class="charts">'
+    + '<div class="ch-sec"><div class="ch-title">Elektronický test – průběh roku ' + y + '</div><div class="ch-sub">Počty zkoušek po měsících</div><div class="ch-wrap"><canvas id="chYT"></canvas></div></div>'
+    + '<div class="ch-sec"><div class="ch-title">Jízdy – průběh roku ' + y + '</div><div class="ch-sub">Počty jízd po měsících</div><div class="ch-wrap"><canvas id="chYJ"></canvas></div></div>'
+    + '</div>'
+
+    + '<div class="sec"><div class="sec-hdr"><h2>Přehled po měsících</h2><p>Rok ' + y + '</p></div>'
+    + '<div class="tbl-wrap"><table><thead><tr>'
+    + '<th>MĚSÍC</th>'
+    + '<th style="color:var(--ac)">T 1.p.</th>'
+    + '<th style="color:var(--ac)">T cel.</th>'
+    + '<th style="color:var(--ac)">T úsp. %</th>'
+    + '<th style="color:var(--bl)">J 1.p.</th>'
+    + '<th style="color:var(--bl)">J cel.</th>'
+    + '<th style="color:var(--bl)">J úsp. %</th>'
+    + '</tr></thead><tbody>' + monthRows + '</tbody></table></div></div>'
+
+    + '<div class="sec"><div class="sec-hdr"><h2>Přehled autoškol</h2><p>Seřazeno abecedně · celý rok ' + y + '</p></div>'
+    + '<div class="tbl-wrap"><table><thead><tr>'
+    + '<th>AUTOŠKOLA</th>'
+    + '<th style="color:var(--ac)">T 1.p.</th>'
+    + '<th style="color:var(--ac)">T cel.</th>'
+    + '<th style="color:var(--bl)">J 1.p.</th>'
+    + '<th style="color:var(--bl)">J cel.</th>'
+    + '</tr></thead><tbody>'
+    + rows.map(r => '<tr>'
+        + '<td class="nm"><button class="as-link" data-as="' + r.as.replace(/"/g,'&quot;') + '" onclick="openModal(this.dataset.as)">' + r.as + '</button></td>'
+        + (r.tc===0&&r.tp1===0 ? '<td class="sc"><span class="dash">–</span></td><td class="sc"><span class="dash">–</span></td>' : cell(r.tp1,r.tp1u)+cell(r.tc,r.tcu))
+        + (r.jc===0&&r.jp1===0 ? '<td class="sc"><span class="dash">–</span></td><td class="sc"><span class="dash">–</span></td>' : cell(r.jp1,r.jp1u)+cell(r.jc,r.jcu))
+        + '</tr>').join('')
+    + '</tbody></table></div></div>'
+
+    + '<div class="charts">'
+    + '<div class="ch-sec"><div class="ch-title">Elektronický test</div><div class="ch-sub">Počty zkoušek per autoškola</div><div class="ch-wrap"><canvas id="chT"></canvas></div></div>'
+    + '<div class="ch-sec"><div class="ch-title">Jízdy</div><div class="ch-sub">Počty jízd per autoškola</div><div class="ch-wrap"><canvas id="chJ"></canvas></div></div>'
+    + '</div>';
+
+  drawYearCharts(testy, jizdy, months);
+  drawCharts(rows);
+}
+
+function drawYearCharts(testy, jizdy, months) {
+  const labels = months.map(m => MN[m].slice(0, 3));
+  const {grid, tick, sf, bd, tx} = tchk();
+  const mkOpts = (d1, d2, l1, l2, color) => ({
+    type: 'bar',
+    data: { labels, datasets: [
+      { label: l1, data: d1, backgroundColor: color.replace('__A__', '.75'), borderRadius: 2 },
+      { label: l2, data: d2, backgroundColor: color.replace('__A__', '.2'),  borderRadius: 2 },
+    ]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: tick, font: { size: 11 } } },
+        tooltip: { backgroundColor: sf, titleColor: tx, bodyColor: tick, borderColor: bd, borderWidth: 1 },
+      },
+      scales: {
+        x: { ticks: { color: tick, font: { size: 10 } }, grid: { color: grid } },
+        y: { ticks: { color: tick }, grid: { color: grid }, beginAtZero: true },
+      }
+    }
+  });
+
+  if (chYT) chYT.destroy();
+  if (chYJ) chYJ.destroy();
+  chYT = new Chart(document.getElementById('chYT'), mkOpts(
+    months.map(m => testy.filter(r=>r.mesic===m && r.pokus_typ==='první').length),
+    months.map(m => testy.filter(r=>r.mesic===m).length),
+    '1. pokusy', 'Celkem', 'rgba(0,229,184,__A__)'
+  ));
+  chYJ = new Chart(document.getElementById('chYJ'), mkOpts(
+    months.map(m => jizdy.filter(r=>r.mesic===m && r.pokus_typ==='první').length),
+    months.map(m => jizdy.filter(r=>r.mesic===m).length),
+    '1. pokusy', 'Celkem', 'rgba(59,130,246,__A__)'
+  ));
 }
 
 // ── MODAL ─────────────────────────────────────────────────────
@@ -397,65 +708,47 @@ async function openModal(as) {
     };
   });
 
-  const rows = byYear.map((r, i) => {
+  const tableRows = byYear.map((r, i) => {
     const prev = i > 0 ? byYear[i-1].cel : null;
     const diff = prev !== null ? r.cel - prev : null;
     const yoyPct = prev ? (diff / prev * 100).toFixed(1) : null;
     let yoyHtml = '<span class="dash">–</span>';
     if (diff !== null) {
-      const cls2 = diff > 0 ? 'yoy-up' : diff < 0 ? 'yoy-dn' : 'yoy-eq';
-      const sign  = diff > 0 ? '+' : '';
-      yoyHtml = `<span class="${cls2}">${sign}${diff} (${sign}${yoyPct} %)</span>`;
+      const c2 = diff > 0 ? 'yoy-up' : diff < 0 ? 'yoy-dn' : 'yoy-eq';
+      const sign = diff > 0 ? '+' : '';
+      yoyHtml = '<span class="' + c2 + '">' + sign + diff + ' (' + sign + yoyPct + ' %)</span>';
     }
     const tCell = r.t_cel
-      ? `${r.t_cel} <small style="color:#8b949e">${pct(r.t_usp,r.t_cel) ?? '–'} %</small>`
+      ? r.t_cel + ' <small style="color:var(--tx2)">' + (pct(r.t_usp,r.t_cel) ?? '–') + ' %</small>'
       : '<span class="dash">–</span>';
     const jCell = r.j_cel
-      ? `${r.j_cel} <small style="color:#8b949e">${pct(r.j_usp,r.j_cel) ?? '–'} %</small>`
+      ? r.j_cel + ' <small style="color:var(--tx2)">' + (pct(r.j_usp,r.j_cel) ?? '–') + ' %</small>'
       : '<span class="dash">–</span>';
-    return `<tr>
-      <td><strong>${r.y}</strong></td>
-      <td class="sc">${tCell}</td>
-      <td class="sc">${jCell}</td>
-      <td class="sc"><strong>${r.cel}</strong></td>
-      <td class="sc">${yoyHtml}</td>
-    </tr>`;
-  });
+    return '<tr>'
+      + '<td><strong>' + r.y + '</strong></td>'
+      + '<td class="sc">' + tCell + '</td>'
+      + '<td class="sc">' + jCell + '</td>'
+      + '<td class="sc"><strong>' + r.cel + '</strong></td>'
+      + '<td class="sc">' + yoyHtml + '</td>'
+      + '</tr>';
+  }).join('');
 
-  // Celkový součet
   const totT = byYear.reduce((s,r) => s + r.t_cel, 0);
   const totJ = byYear.reduce((s,r) => s + r.j_cel, 0);
 
-  document.getElementById('modalBody').innerHTML = `
-    <div class="modal-section">
-      <h3>PŘEHLED PO ROCÍCH</h3>
-      <div class="tbl-wrap">
-        <table>
-          <thead><tr>
-            <th>Rok</th>
-            <th style="color:#00e5b8">Testy (úsp. %)</th>
-            <th style="color:#3b82f6">Jízdy (úsp. %)</th>
-            <th>Celkem</th>
-            <th>Meziroční</th>
-          </tr></thead>
-          <tbody>${rows.join('')}</tbody>
-        </table>
-      </div>
-    </div>
-    <div style="display:flex;gap:14px;flex-wrap:wrap">
-      <div class="card" style="flex:1;min-width:160px">
-        <div class="card-hdr t">TESTY CELKEM</div>
-        <div style="padding:14px 18px;font-size:26px;font-weight:700">${totT}</div>
-      </div>
-      <div class="card" style="flex:1;min-width:160px">
-        <div class="card-hdr j">JÍZDY CELKEM</div>
-        <div style="padding:14px 18px;font-size:26px;font-weight:700">${totJ}</div>
-      </div>
-      <div class="card" style="flex:1;min-width:160px">
-        <div class="card-hdr" style="color:#a78bfa">ZKOUŠKY CELKEM</div>
-        <div style="padding:14px 18px;font-size:26px;font-weight:700">${totT + totJ}</div>
-      </div>
-    </div>`;
+  document.getElementById('modalBody').innerHTML =
+    '<div class="modal-section"><h3>PŘEHLED PO ROCÍCH</h3>'
+    + '<div class="tbl-wrap"><table><thead><tr>'
+    + '<th>Rok</th>'
+    + '<th style="color:var(--ac)">Testy (úsp. %)</th>'
+    + '<th style="color:var(--bl)">Jízdy (úsp. %)</th>'
+    + '<th>Celkem</th><th>Meziroční</th>'
+    + '</tr></thead><tbody>' + tableRows + '</tbody></table></div></div>'
+    + '<div style="display:flex;gap:14px;flex-wrap:wrap">'
+    + '<div class="card" style="flex:1;min-width:160px"><div class="card-hdr t">TESTY CELKEM</div><div style="padding:14px 18px;font-size:26px;font-weight:700">' + totT + '</div></div>'
+    + '<div class="card" style="flex:1;min-width:160px"><div class="card-hdr j">JÍZDY CELKEM</div><div style="padding:14px 18px;font-size:26px;font-weight:700">' + totJ + '</div></div>'
+    + '<div class="card" style="flex:1;min-width:160px"><div class="card-hdr" style="color:#a78bfa">ZKOUŠKY CELKEM</div><div style="padding:14px 18px;font-size:26px;font-weight:700">' + (totT+totJ) + '</div></div>'
+    + '</div>';
 }
 
 init();
