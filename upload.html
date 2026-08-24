@@ -131,18 +131,22 @@ input[type=file]{display:none}
 <script>
 (function(){
   const PW = 'komisař';
-  if (sessionStorage.getItem('upload_auth') === '1') {
+  function unlock() {
     document.getElementById('gate').style.display = 'none';
     document.getElementById('mainContent').style.display = '';
+    loadMonths();
+    refreshUndoUI();
+  }
+  if (sessionStorage.getItem('upload_auth') === '1') {
+    // loadMonths/refreshUndoUI jsou definované až v dalším <script> bloku,
+    // proto počkáme na DOMContentLoaded (proběhne až po jeho spuštění)
+    document.addEventListener('DOMContentLoaded', unlock);
   }
   window.gateCheck = function() {
     const val = document.getElementById('gateInput').value;
     if (val === PW) {
       sessionStorage.setItem('upload_auth', '1');
-      document.getElementById('gate').style.display = 'none';
-      document.getElementById('mainContent').style.display = '';
-      loadMonths();
-      refreshUndoUI();
+      unlock();
     } else {
       document.getElementById('gateErr').textContent = 'Špatné heslo, zkuste znovu.';
       document.getElementById('gateInput').value = '';
