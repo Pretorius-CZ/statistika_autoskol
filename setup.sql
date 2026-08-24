@@ -35,3 +35,17 @@ CREATE POLICY "delete_testy" ON zkousky_testy FOR DELETE TO anon USING (true);
 CREATE POLICY "read_jizdy"   ON zkousky_jizdy FOR SELECT TO anon USING (true);
 CREATE POLICY "insert_jizdy" ON zkousky_jizdy FOR INSERT TO anon WITH CHECK (true);
 CREATE POLICY "delete_jizdy" ON zkousky_jizdy FOR DELETE TO anon USING (true);
+
+-- Záloha stavu tabulky před posledním uploadem (jedno-krokové UNDO v upload.html)
+CREATE TABLE IF NOT EXISTS zaloha_stav (
+  tabulka TEXT PRIMARY KEY,
+  data JSONB,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE zaloha_stav ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "read_zaloha"   ON zaloha_stav FOR SELECT TO anon USING (true);
+CREATE POLICY "insert_zaloha" ON zaloha_stav FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY "update_zaloha" ON zaloha_stav FOR UPDATE TO anon USING (true) WITH CHECK (true);
+CREATE POLICY "delete_zaloha" ON zaloha_stav FOR DELETE TO anon USING (true);

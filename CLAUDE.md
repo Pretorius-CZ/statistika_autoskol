@@ -25,6 +25,7 @@ Používají ho úředníci magistrátu.
 - Tabulky: `zkousky_testy`, `zkousky_jizdy`
 - Sloupce: `id, datum (TIMESTAMPTZ), autoskola, pokus_typ (první/opakovaný), hodnoceni (prospěl/neprospěl), mesic, rok, created_at`
 - RLS: SELECT + INSERT + DELETE povoleno pro `anon` roli
+- Tabulka `zaloha_stav` (`tabulka` PK, `data` JSONB, `updated_at`) – jednoslotová záloha pro UNDO v upload.html, viz níže
 
 ## Formát dat v Excel souborech
 
@@ -42,9 +43,19 @@ Upload automaticky detekuje typ dat podle počtu měsíců v souboru:
 
 Sloupce a hodnoty se mapují automaticky podle názvů výše.
 
+## UNDO / záloha před uploadem
+
+Před každým uploadem (monthly i historic) se aktuální celý obsah cílové tabulky (`zkousky_testy` nebo
+`zkousky_jizdy`) uloží do `zaloha_stav` (přepíše předchozí zálohu – jeden slot na tabulku, ne historie).
+Tlačítko „Vrátit zpět poslední nahrání" na kartě dané záložky (viditelné jen když záloha existuje) smaže
+aktuální obsah tabulky a nahradí ho zálohou; po použití se záloha vyprázdní (jedno-krokové UNDO, ne
+přepínač/redo). Řeší hlavně omylem nahraná data do špatné záložky (jízdy do testů a naopak) nebo špatný
+soubor pro daný měsíc. Netýká se tlačítka „Smazat vše" – to zůstává nevratné.
+
 ## Aktuální stav
 
 - Dashboard funguje, připojení Supabase OK
 - Upload funguje včetně parsování českého formátu data
+- Upload má jedno-krokové UNDO (zaloha_stav) – viz výše
 - Modal detail autoškoly: kliknutí na název otevře přehled po rocích (počty zkoušek, úspěšnost, meziroční změna)
 - Unikátní žáci v modalu nejsou – data neobsahují identifikátor žáka
