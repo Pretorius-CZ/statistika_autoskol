@@ -50,7 +50,10 @@ Před každým uploadem (monthly i historic) se aktuální celý obsah cílové 
 Tlačítko „Vrátit zpět poslední nahrání" na kartě dané záložky (viditelné jen když záloha existuje) smaže
 aktuální obsah tabulky a nahradí ho zálohou; po použití se záloha vyprázdní (jedno-krokové UNDO, ne
 přepínač/redo). Řeší hlavně omylem nahraná data do špatné záložky (jízdy do testů a naopak) nebo špatný
-soubor pro daný měsíc. Netýká se tlačítka „Smazat vše" – to zůstává nevratné.
+soubor pro daný měsíc.
+
+Tlačítko „Smazat vše" (mazání všech dat) bylo z upload.html odstraněno – nedávalo smysl vedle UNDO
+mechanismu.
 
 ## Aktuální stav
 

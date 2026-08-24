@@ -64,12 +64,6 @@ input[type=file]{display:none}
 .month-chip{padding:5px 12px;background:#f6f8fa;border:1px solid #d0d7de;border-radius:20px;font-size:13px;color:#24292f}
 .months-empty{font-size:13px;color:#636c76}
 
-.danger-card{background:#fff;border:1px solid #fca5a5;border-radius:10px;padding:18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
-.danger-text h3{font-size:14px;font-weight:600;color:#dc2626;margin-bottom:2px}
-.danger-text p{font-size:12px;color:#636c76}
-.btn-danger{padding:9px 18px;background:#dc2626;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .15s}
-.btn-danger:hover{background:#b91c1c}
-
 .footer{text-align:center;font-size:12px;color:#8c959f;margin-top:30px}
 </style>
 </head>
@@ -128,14 +122,6 @@ input[type=file]{display:none}
   <div class="months-card">
     <div class="months-title">Nahrané měsíce v databázi</div>
     <div id="monthsList"><div class="months-empty">Načítám…</div></div>
-  </div>
-
-  <div class="danger-card">
-    <div class="danger-text">
-      <h3>Smazat všechna data</h3>
-      <p>Odstraní veškerá data ze všech měsíců. Nevratná akce.</p>
-    </div>
-    <button class="btn-danger" onclick="deleteAll()">Smazat vše</button>
   </div>
 
   <div class="footer">Dashboard statistik autoškol · Magistrát Jablonec n. N.</div>
@@ -498,18 +484,6 @@ async function loadMonths() {
     const [y, m] = k.split('-');
     return `<span class="month-chip">${parseInt(m)}/${y}</span>`;
   }).join('')}</div>`;
-}
-
-async function deleteAll() {
-  if (!confirm('Opravdu smazat VEŠKERÁ data ze všech měsíců? Tato akce je nevratná.')) return;
-  showStatus('info', 'Mažu data…');
-  const [rt, rj] = await Promise.all([
-    sb.from('zkousky_testy').delete().neq('id', 0),
-    sb.from('zkousky_jizdy').delete().neq('id', 0),
-  ]);
-  if (rt.error || rj.error) { showStatus('err', 'Chyba při mazání.'); return; }
-  showStatus('ok', '✓ Všechna data byla smazána.');
-  loadMonths();
 }
 
 function showStatus(type, msg) {
