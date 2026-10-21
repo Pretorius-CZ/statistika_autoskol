@@ -34,7 +34,9 @@ body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSyst
 .hdr-logo img{width:44px;height:44px;object-fit:contain}
 .hdr-title h1{font-size:19px;font-weight:600}
 .hdr-title p{font-size:14px;color:var(--tx2)}
-#hdrPeriod{font-size:20px;font-weight:600;color:var(--ac)}
+.hdr-updated{font-size:14px;font-weight:700;color:var(--tx2);margin-top:2px}
+.hdr-updated .dt{font-size:17px;color:#22c55e}
+#hdrPeriod{font-size:28px;font-weight:700;color:var(--ac)}
 .hdr-actions{display:flex;align-items:center;gap:10px}
 .btn-ghost{display:flex;align-items:center;gap:6px;background:var(--sf2);border:1px solid var(--bd);color:var(--tx);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:15px;text-decoration:none;transition:background .15s,border-color .15s,color .15s}
 .btn-ghost:hover{background:var(--bd)}
@@ -43,13 +45,19 @@ body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSyst
 
 /* MONTH SELECTOR */
 .months-bar{background:var(--sf);border-bottom:1px solid var(--bd);padding:14px 0;transition:background .25s,border-color .25s}
-.months-bar-inner{display:flex;align-items:flex-start;gap:28px}
+.months-bar-inner{display:flex;flex-direction:column;gap:14px}
+.top-row{display:flex;align-items:flex-start;gap:28px}
 .month-grid{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
 .month-row{display:flex;align-items:center;gap:5px}
-.trend-panel{flex:1;min-width:180px}
+.side-panel{flex:1;min-width:0}
+.side-tbl-wrap table{font-size:13px}
+.trends-row{display:flex;gap:14px;width:100%}
+.trend-panel{flex:1;min-width:150px}
 .trend-hdr{font-size:13px;font-weight:700;letter-spacing:.06em;color:var(--tx2);margin-bottom:8px}
+.trend-slope{font-size:14px;font-weight:600;background:var(--sf2);border:1px solid var(--bd);border-radius:6px;padding:8px 12px;margin-bottom:8px;line-height:1.5}
 .trend-wrap{position:relative;height:160px}
-@media(max-width:820px){.months-bar-inner{flex-direction:column}.trend-panel{width:100%}}
+@media(max-width:820px){.top-row{flex-direction:column}.top-row .side-panel{width:100%}}
+@media(max-width:560px){.trends-row{flex-direction:column}}
 .yr-btn{width:38px;height:26px;border-radius:4px;border:1px solid transparent;background:transparent;color:var(--tx3);font-size:14px;cursor:pointer;flex-shrink:0;transition:all .15s}
 .yr-btn.has{color:var(--tx2);border-color:var(--bd)}
 .yr-btn.has:hover{background:var(--sf2);color:var(--tx)}
@@ -65,19 +73,10 @@ body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSyst
 .main{padding:22px 0}
 
 /* CARDS */
-.cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
-@media(max-width:600px){.cards{grid-template-columns:1fr}}
 .card{background:var(--sf);border:1px solid var(--bd);border-radius:10px;overflow:hidden;transition:background .25s,border-color .25s}
 .card-hdr{padding:11px 18px;font-size:14px;font-weight:700;letter-spacing:.06em;border-bottom:1px solid var(--bd)}
 .card-hdr.t{color:var(--ac)}
 .card-hdr.j{color:var(--bl)}
-.card-body{display:grid;grid-template-columns:1fr 1fr}
-.ci{padding:14px 18px;border-right:1px solid var(--bd);border-bottom:1px solid var(--bd)}
-.ci:nth-child(2n){border-right:none}
-.ci:nth-child(3),.ci:nth-child(4){border-bottom:none}
-.ci-lbl{font-size:13px;color:var(--tx2);margin-bottom:5px}
-.ci-val{font-size:28px;font-weight:700;line-height:1}
-.ci-pct{font-size:15px;color:var(--tx2);margin-left:7px}
 
 /* TABLE */
 .sec{background:var(--sf);border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:20px;transition:background .25s,border-color .25s}
@@ -86,16 +85,19 @@ body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSyst
 .sec-hdr p{font-size:14px;color:var(--tx2)}
 .tbl-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse}
-thead th{padding:10px 14px;text-align:left;font-size:15px;color:var(--tx2);font-weight:600;letter-spacing:.05em;border-bottom:1px solid var(--bd);white-space:nowrap}
+thead th{padding:7px 14px;text-align:left;font-size:13px;color:var(--tx2);font-weight:600;letter-spacing:.05em;border-bottom:1px solid var(--bd);white-space:nowrap}
 thead th:not(:first-child){text-align:center}
 tbody tr{border-bottom:1px solid var(--bd2)}
 tbody tr:last-child{border-bottom:none}
 tbody tr:hover{background:var(--sf3)}
-td{padding:12px 14px;font-size:15px}
+td{padding:6px 14px;font-size:14px}
 td.nm{font-weight:500}
 td.sc{text-align:center}
-.cn{font-weight:700;font-size:16px;display:block}
-.cp{font-size:13px;display:block;margin-top:2px}
+.cn{font-weight:700;font-size:14px;display:block}
+.cp{font-size:11px;display:block;margin-top:1px}
+.as-table th:not(:first-child),.as-table td.sc{width:1%;white-space:nowrap}
+.as-table .grp-sep{border-left:1px solid var(--bd)}
+.as-table .sub-sep{border-left:1px dashed var(--bd2)}
 .pg{color:#22c55e}
 .pm{color:#f59e0b}
 .pb{color:#ef4444}
@@ -146,6 +148,7 @@ td.sc{text-align:center}
         <div class="hdr-title">
           <h1>Statistiky zkoušek řidičů</h1>
           <p>Magistrát Jablonec nad Nisou</p>
+          <p id="hdrUpdated" class="hdr-updated"></p>
         </div>
       </div>
       <div id="hdrPeriod">—</div>
@@ -161,13 +164,26 @@ td.sc{text-align:center}
 <div class="months-bar">
   <div class="wrap">
     <div class="months-bar-inner">
-      <div id="monthGrid" class="month-grid">
-        <div class="empty"><div class="spinner"></div></div>
+      <div class="top-row">
+        <div id="monthGrid" class="month-grid">
+          <div class="empty"><div class="spinner"></div></div>
+        </div>
+        <div class="side-panel">
+          <div class="trend-hdr">CELKOVÝ PŘEHLED</div>
+          <div id="periodSummary" class="tbl-wrap side-tbl-wrap"></div>
+        </div>
       </div>
-      <div class="trend-panel">
-        <div class="trend-hdr">MEZIROČNÍ TREND – JÍZDY</div>
-        <div id="trendSlope" style="font-size:13px;color:var(--tx2);margin-bottom:6px"></div>
-        <div class="trend-wrap"><canvas id="chTrend"></canvas></div>
+      <div class="trends-row">
+        <div class="trend-panel">
+          <div class="trend-hdr" style="color:var(--ac)">MEZIROČNÍ TREND – TESTY</div>
+          <div id="trendSlopeT" class="trend-slope"></div>
+          <div class="trend-wrap"><canvas id="chTrendT"></canvas></div>
+        </div>
+        <div class="trend-panel">
+          <div class="trend-hdr" style="color:var(--bl)">MEZIROČNÍ TREND – JÍZDY</div>
+          <div id="trendSlope" class="trend-slope"></div>
+          <div class="trend-wrap"><canvas id="chTrend"></canvas></div>
+        </div>
       </div>
     </div>
   </div>
@@ -203,13 +219,20 @@ try {
 }
 
 const MN = ['','Leden','Únor','Březen','Duben','Květen','Červen','Červenec','Srpen','Září','Říjen','Listopad','Prosinec'];
+const MNG = ['','ledna','února','března','dubna','května','června','července','srpna','září','října','listopadu','prosince'];
 const YEARS = [2021,2022,2023,2024,2025,2026];
 
 let selM = null, selY = null;
-let chT = null, chJ = null, chYT = null, chYJ = null, chTrend = null;
+let chT = null, chJ = null, chYT = null, chYJ = null;
+const trendCharts = {};
 let available = new Set();
-let trendData   = { jizdy: [] };
+let trendData   = { jizdy: [], testy: [] };
 let currentView = null;
+
+const TREND_OPTS = {
+  jizdy: { canvas: 'chTrend',  slopeEl: 'trendSlope',  color: '59,130,246', label: 'Jízdy', unit: 'jízd' },
+  testy: { canvas: 'chTrendT', slopeEl: 'trendSlopeT', color: '0,229,184',  label: 'Testy', unit: 'testů' },
+};
 
 // ── THEME ─────────────────────────────────────────────────────
 function tchk() {
@@ -229,7 +252,8 @@ function toggleTheme() {
   html.dataset.theme = goLight ? 'light' : '';
   try { localStorage.setItem('theme', html.dataset.theme); } catch(e) {}
   document.getElementById('themeToggle').textContent = goLight ? '🌙' : '☀';
-  renderTrendChart(trendData.jizdy);
+  renderTrendChart(trendData.jizdy, TREND_OPTS.jizdy);
+  renderTrendChart(trendData.testy, TREND_OPTS.testy);
   if (currentView) {
     if (currentView.type === 'month') render(currentView.testy, currentView.jizdy);
     else renderYear(currentView.testy, currentView.jizdy, currentView.y);
@@ -273,9 +297,11 @@ async function init() {
     return;
   }
   available = new Set([...(rt.data||[]),...(rj.data||[])].map(r=>`${r.rok}-${r.mesic}`));
-  trendData = { jizdy: rj.data || [] };
+  trendData = { jizdy: rj.data || [], testy: rt.data || [] };
   renderGrid();
-  renderTrendChart(trendData.jizdy);
+  renderTrendChart(trendData.jizdy, TREND_OPTS.jizdy);
+  renderTrendChart(trendData.testy, TREND_OPTS.testy);
+  loadLastUpdated();
   if (!available.size) {
     document.getElementById('content').innerHTML =
       '<div class="empty">Databáze je prázdná – nahrajte data přes <a href="upload.html" style="color:var(--ac)">Nahrát data</a>.</div>';
@@ -287,6 +313,20 @@ async function init() {
   });
   const [y,m] = sorted.pop().split('-').map(Number);
   pick(m, y);
+}
+
+async function loadLastUpdated() {
+  const [rt, rj] = await Promise.all([
+    sb.from('zkousky_testy').select('datum').order('datum', { ascending: false }).limit(1),
+    sb.from('zkousky_jizdy').select('datum').order('datum', { ascending: false }).limit(1),
+  ]);
+  const dates = [rt.data?.[0]?.datum, rj.data?.[0]?.datum].filter(Boolean).map(d => new Date(d));
+  const el = document.getElementById('hdrUpdated');
+  if (!dates.length || !el) return;
+  const max = new Date(Math.max(...dates));
+  const dd = String(max.getDate()).padStart(2, '0');
+  const mm = String(max.getMonth() + 1).padStart(2, '0');
+  el.innerHTML = `Data aktualizována k <span class="dt">${dd}.${mm}.${max.getFullYear()}</span>`;
 }
 
 function renderGrid() {
@@ -345,10 +385,37 @@ function cls(p){
   return p>=70 ? 'pg' : p>=50 ? 'pm' : 'pb';
 }
 
-function cell(att, usp) {
-  if(!att) return '<td class="sc"><span class="dash">–</span></td>';
-  const p = pct(usp,att);
-  return '<td class="sc"><span class="cn">' + att + '</span><span class="cp ' + cls(p) + '">' + (p!==null?p+' %':'–') + '</span></td>';
+function metricCells(att, usp, extraClass) {
+  const c0 = 'sc' + (extraClass ? ' ' + extraClass : '');
+  if (!att) {
+    return '<td class="' + c0 + '"><span class="dash">–</span></td><td class="sc"><span class="dash">–</span></td><td class="sc"><span class="dash">–</span></td>';
+  }
+  const p = pct(usp, att);
+  return '<td class="' + c0 + '"><span class="cn">' + att + '</span></td>'
+    + '<td class="sc">' + usp + '</td>'
+    + '<td class="sc"><span class="' + cls(p) + '">' + (p!==null ? p + ' %' : '–') + '</span></td>';
+}
+
+function renderSummaryTable(ts, js) {
+  const el = document.getElementById('periodSummary');
+  if (!el) return;
+  const row = (label, s, color) => '<tr>'
+    + '<td class="nm" style="color:' + color + '">' + label + '</td>'
+    + '<td class="sc"><span class="cn">' + s.p1 + '</span></td>'
+    + '<td class="sc"><span class="cn">' + s.p1u + '</span><span class="cp">' + (pct(s.p1u,s.p1)??'–') + ' %</span></td>'
+    + '<td class="sc"><span class="cn">' + s.cel + '</span></td>'
+    + '<td class="sc"><span class="cn">' + s.celu + '</span><span class="cp">' + (pct(s.celu,s.cel)??'–') + ' %</span></td>'
+    + '</tr>';
+  el.innerHTML = '<table><thead><tr>'
+    + '<th></th>'
+    + '<th>1. pokusy</th>'
+    + '<th>Prospěl(a) 1.p.</th>'
+    + '<th>Celkem</th>'
+    + '<th>Prospěl(a) celkem</th>'
+    + '</tr></thead><tbody>'
+    + row('Testy', ts, 'var(--ac)')
+    + row('Jízdy', js, 'var(--bl)')
+    + '</tbody></table>';
 }
 
 // ── MONTH VIEW ────────────────────────────────────────────────
@@ -371,29 +438,19 @@ function render(testy, jizdy) {
     };
   });
 
-  const cardRow = (s, c) => '<div class="card">'
-    + '<div class="card-hdr ' + c + '">' + (c==='t'?'ELEKTRONICKÝ TEST':'JÍZDY') + '</div>'
-    + '<div class="card-body">'
-    + '<div class="ci"><div class="ci-lbl">1. pokusy celkem</div><div class="ci-val">' + s.p1 + '</div></div>'
-    + '<div class="ci"><div class="ci-lbl">Úspěšní v 1. pokusu</div><div class="ci-val">' + s.p1u + '<span class="ci-pct">' + (pct(s.p1u,s.p1)??'–') + ' %</span></div></div>'
-    + '<div class="ci"><div class="ci-lbl">' + (c==='t'?'Zkoušky celkem':'Jízdy celkem') + '</div><div class="ci-val">' + s.cel + '</div></div>'
-    + '<div class="ci"><div class="ci-lbl">Celkem úspěšní</div><div class="ci-val">' + s.celu + '<span class="ci-pct">' + (pct(s.celu,s.cel)??'–') + ' %</span></div></div>'
-    + '</div></div>';
-
   document.getElementById('content').innerHTML =
-    '<div class="cards">' + cardRow(ts,'t') + cardRow(js,'j') + '</div>'
-    + '<div class="sec"><div class="sec-hdr"><h2>Přehled autoškol</h2><p>Seřazeno abecedně</p></div>'
-    + '<div class="tbl-wrap"><table><thead><tr>'
-    + '<th>AUTOŠKOLA</th>'
-    + '<th style="color:var(--ac)">1.testů</th>'
-    + '<th style="color:var(--ac)">Celkem testů</th>'
-    + '<th style="color:var(--bl)">1.jízd</th>'
-    + '<th style="color:var(--bl)">Celkem jízd</th>'
-    + '</tr></thead><tbody>'
+    '<div class="sec"><div class="sec-hdr"><h2>Přehled autoškol</h2><p>Seřazeno abecedně</p></div>'
+    + '<div class="tbl-wrap"><table class="as-table"><thead>'
+    + '<tr><th rowspan="3">AUTOŠKOLA</th><th colspan="6" style="color:var(--ac)">TESTY</th><th colspan="6" style="color:var(--bl)" class="grp-sep">JÍZDY</th></tr>'
+    + '<tr><th colspan="3">1. pokus</th><th colspan="3" class="sub-sep">Celkem</th><th colspan="3" class="grp-sep">1. pokus</th><th colspan="3" class="sub-sep">Celkem</th></tr>'
+    + '<tr><th>Počet</th><th>Prospěl(a)</th><th>%</th><th class="sub-sep">Počet</th><th>Prospěl(a)</th><th>%</th><th class="grp-sep">Počet</th><th>Prospěl(a)</th><th>%</th><th class="sub-sep">Počet</th><th>Prospěl(a)</th><th>%</th></tr>'
+    + '</thead><tbody>'
     + rows.map(r => '<tr>'
         + '<td class="nm"><button class="as-link" data-as="' + r.as.replace(/"/g,'&quot;') + '" onclick="openModal(this.dataset.as)">' + r.as + '</button></td>'
-        + (r.tc===0&&r.tp1===0 ? '<td class="sc"><span class="dash">–</span></td><td class="sc"><span class="dash">–</span></td>' : cell(r.tp1,r.tp1u)+cell(r.tc,r.tcu))
-        + (r.jc===0&&r.jp1===0 ? '<td class="sc"><span class="dash">–</span></td><td class="sc"><span class="dash">–</span></td>' : cell(r.jp1,r.jp1u)+cell(r.jc,r.jcu))
+        + metricCells(r.tp1, r.tp1u)
+        + metricCells(r.tc,  r.tcu,  'sub-sep')
+        + metricCells(r.jp1, r.jp1u, 'grp-sep')
+        + metricCells(r.jc,  r.jcu,  'sub-sep')
         + '</tr>').join('')
     + '</tbody></table></div></div>'
     + '<div class="charts">'
@@ -401,6 +458,7 @@ function render(testy, jizdy) {
     + '<div class="ch-sec"><div class="ch-title">Jízdy</div><div class="ch-sub">Počty jízd per autoškola</div><div class="ch-wrap"><canvas id="chJ"></canvas></div></div>'
     + '</div>';
 
+  renderSummaryTable(ts, js);
   drawCharts(rows);
 }
 
@@ -443,48 +501,72 @@ function linReg(xs, ys) {
   return { a: my - b*mx, b };
 }
 
-function renderTrendChart(jizdy) {
-  const jByY = {};
-  for (const r of jizdy) jByY[r.rok] = (jByY[r.rok] || 0) + 1;
+function renderTrendChart(data, opts) {
+  const byY = {};
+  for (const r of data) byY[r.rok] = (byY[r.rok] || 0) + 1;
 
-  const dataYears = [...new Set(Object.keys(jByY))].map(Number).sort((a,b)=>a-b);
-  if (!dataYears.length) return;
+  const dataYears = [...new Set(Object.keys(byY))].map(Number).sort((a,b)=>a-b);
+  const slopeEl = document.getElementById(opts.slopeEl);
+  if (!dataYears.length) {
+    if (slopeEl) slopeEl.innerHTML = '';
+    return;
+  }
 
-  const curY = new Date().getFullYear();
+  const now  = new Date();
+  const curY = now.getFullYear();
+  const cutoffM = now.getMonth(); // počet úplně uzavřených měsíců aktuálního roku (0 = leden ještě neskončil)
+  const pctElapsed = Math.round((now - new Date(curY,0,1)) / (new Date(curY+1,0,1) - new Date(curY,0,1)) * 100);
+
   const regYears = dataYears.filter(y => y < curY);
-  const regVals  = regYears.map(y => jByY[y] || 0);
+  const regVals  = regYears.map(y => byY[y] || 0);
   const reg = linReg(regYears, regVals);
 
   const endY = Math.max(dataYears[dataYears.length - 1], curY) + 2;
   const labels = [];
   for (let y = dataYears[0]; y <= endY; y++) labels.push(y);
 
-  const jVals     = labels.map(y => (jByY[y] !== undefined) ? jByY[y] : null);
+  const vals      = labels.map(y => (byY[y] !== undefined) ? byY[y] : null);
   const trendVals = labels.map(y => Math.max(0, Math.round(reg.a + reg.b * y)));
 
   const slope = Math.round(reg.b);
-  const slopeEl = document.getElementById('trendSlope');
   if (slopeEl) {
     const color  = slope > 0 ? '#22c55e' : slope < 0 ? '#ef4444' : 'var(--tx2)';
     const sign   = slope > 0 ? '+' : '';
-    slopeEl.innerHTML = '<span style="color:' + color + '">' + sign + slope + ' jízd/rok</span>'
+    let html = '<span style="color:' + color + '">' + sign + slope + ' ' + opts.unit + '/rok</span>'
       + (regYears.length >= 2 ? ' <span style="color:var(--tx2)">(regrese ' + regYears[0] + '–' + regYears[regYears.length-1] + ')</span>' : '');
+
+    if (cutoffM >= 1 && dataYears.includes(curY) && dataYears.includes(curY - 1)) {
+      const ytd = y => data.filter(r => r.rok === y && r.mesic <= cutoffM).length;
+      const ytdCur = ytd(curY), ytdPrev = ytd(curY - 1);
+      const diff = ytdCur - ytdPrev;
+      const diffPct = ytdPrev ? Math.round(diff / ytdPrev * 100) : null;
+      const dColor = diff > 0 ? '#22c55e' : diff < 0 ? '#ef4444' : 'var(--tx2)';
+      const dSign  = diff > 0 ? '+' : '';
+      html += '<br><span style="color:var(--tx2)">Do konce ' + MNG[cutoffM] + ': <strong style="color:var(--tx)">' + ytdCur
+        + '</strong> · loni ke stejnému datu: ' + ytdPrev
+        + ' (<span style="color:' + dColor + '">' + dSign + (diffPct !== null ? diffPct + ' %' : diff) + '</span>)</span>';
+    }
+    slopeEl.innerHTML = html;
   }
 
   const {grid, tick, sf, bd, tx} = tchk();
-  if (chTrend) chTrend.destroy();
-  chTrend = new Chart(document.getElementById('chTrend'), {
+  if (trendCharts[opts.canvas]) trendCharts[opts.canvas].destroy();
+  trendCharts[opts.canvas] = new Chart(document.getElementById(opts.canvas), {
     type: 'line',
     data: {
       labels,
       datasets: [
         {
-          label: 'Jízdy (skutečnost)',
-          data: jVals,
-          borderColor: 'rgba(59,130,246,.9)',
-          backgroundColor: 'rgba(59,130,246,.12)',
+          label: opts.label + ' (skutečnost)',
+          data: vals,
+          borderColor: 'rgba(' + opts.color + ',.9)',
+          backgroundColor: 'rgba(' + opts.color + ',.12)',
           fill: true, tension: 0.3,
-          pointRadius: 4, pointHoverRadius: 6,
+          pointRadius:      labels.map(y => y === curY ? 7 : 4),
+          pointHoverRadius:  labels.map(y => y === curY ? 9 : 6),
+          pointStyle:        labels.map(y => y === curY ? 'triangle' : 'circle'),
+          pointBackgroundColor: labels.map(y => y === curY ? '#fb923c' : 'rgba(' + opts.color + ',1)'),
+          pointBorderColor:     labels.map(y => y === curY ? '#fb923c' : 'rgba(' + opts.color + ',1)'),
           spanGaps: false,
         },
         {
@@ -509,7 +591,9 @@ function renderTrendChart(jizdy) {
           callbacks: {
             title: items => {
               const y = Number(items[0].label);
-              return 'Rok ' + y + (y > curY ? ' (prognóza)' : y === curY ? ' (rok probíhá)' : '');
+              if (y > curY) return 'Rok ' + y + ' (prognóza)';
+              if (y === curY) return 'Rok ' + y + ' (probíhá, ' + pctElapsed + ' % roku uplynulo)';
+              return 'Rok ' + y;
             },
             label: item => item.raw === null ? null : item.dataset.label + ': ' + item.raw,
           },
@@ -563,15 +647,6 @@ function renderYear(testy, jizdy, y) {
 
   const months = [...new Set([...testy,...jizdy].map(r=>r.mesic))].sort((a,b)=>a-b);
 
-  const cardRow = (s, c) => '<div class="card">'
-    + '<div class="card-hdr ' + c + '">' + (c==='t'?'ELEKTRONICKÝ TEST':'JÍZDY') + '</div>'
-    + '<div class="card-body">'
-    + '<div class="ci"><div class="ci-lbl">1. pokusy celkem</div><div class="ci-val">' + s.p1 + '</div></div>'
-    + '<div class="ci"><div class="ci-lbl">Úspěšní v 1. pokusu</div><div class="ci-val">' + s.p1u + '<span class="ci-pct">' + (pct(s.p1u,s.p1)??'–') + ' %</span></div></div>'
-    + '<div class="ci"><div class="ci-lbl">' + (c==='t'?'Zkoušky celkem':'Jízdy celkem') + '</div><div class="ci-val">' + s.cel + '</div></div>'
-    + '<div class="ci"><div class="ci-lbl">Celkem úspěšní</div><div class="ci-val">' + s.celu + '<span class="ci-pct">' + (pct(s.celu,s.cel)??'–') + ' %</span></div></div>'
-    + '</div></div>';
-
   const dash = '<span class="dash">–</span>';
   const monthRows = months.map(m => {
     const tm = testy.filter(r=>r.mesic===m);
@@ -592,9 +667,7 @@ function renderYear(testy, jizdy, y) {
   }).join('');
 
   document.getElementById('content').innerHTML =
-    '<div class="cards">' + cardRow(ts,'t') + cardRow(js,'j') + '</div>'
-
-    + '<div class="charts">'
+    '<div class="charts">'
     + '<div class="ch-sec"><div class="ch-title">Elektronický test – průběh roku ' + y + '</div><div class="ch-sub">Počty zkoušek po měsících</div><div class="ch-wrap"><canvas id="chYT"></canvas></div></div>'
     + '<div class="ch-sec"><div class="ch-title">Jízdy – průběh roku ' + y + '</div><div class="ch-sub">Počty jízd po měsících</div><div class="ch-wrap"><canvas id="chYJ"></canvas></div></div>'
     + '</div>'
@@ -611,17 +684,17 @@ function renderYear(testy, jizdy, y) {
     + '</tr></thead><tbody>' + monthRows + '</tbody></table></div></div>'
 
     + '<div class="sec"><div class="sec-hdr"><h2>Přehled autoškol</h2><p>Seřazeno abecedně · celý rok ' + y + '</p></div>'
-    + '<div class="tbl-wrap"><table><thead><tr>'
-    + '<th>AUTOŠKOLA</th>'
-    + '<th style="color:var(--ac)">T 1.p.</th>'
-    + '<th style="color:var(--ac)">T cel.</th>'
-    + '<th style="color:var(--bl)">J 1.p.</th>'
-    + '<th style="color:var(--bl)">J cel.</th>'
-    + '</tr></thead><tbody>'
+    + '<div class="tbl-wrap"><table class="as-table"><thead>'
+    + '<tr><th rowspan="3">AUTOŠKOLA</th><th colspan="6" style="color:var(--ac)">TESTY</th><th colspan="6" style="color:var(--bl)" class="grp-sep">JÍZDY</th></tr>'
+    + '<tr><th colspan="3">1. pokus</th><th colspan="3" class="sub-sep">Celkem</th><th colspan="3" class="grp-sep">1. pokus</th><th colspan="3" class="sub-sep">Celkem</th></tr>'
+    + '<tr><th>Počet</th><th>Prospěl(a)</th><th>%</th><th class="sub-sep">Počet</th><th>Prospěl(a)</th><th>%</th><th class="grp-sep">Počet</th><th>Prospěl(a)</th><th>%</th><th class="sub-sep">Počet</th><th>Prospěl(a)</th><th>%</th></tr>'
+    + '</thead><tbody>'
     + rows.map(r => '<tr>'
         + '<td class="nm"><button class="as-link" data-as="' + r.as.replace(/"/g,'&quot;') + '" onclick="openModal(this.dataset.as)">' + r.as + '</button></td>'
-        + (r.tc===0&&r.tp1===0 ? '<td class="sc"><span class="dash">–</span></td><td class="sc"><span class="dash">–</span></td>' : cell(r.tp1,r.tp1u)+cell(r.tc,r.tcu))
-        + (r.jc===0&&r.jp1===0 ? '<td class="sc"><span class="dash">–</span></td><td class="sc"><span class="dash">–</span></td>' : cell(r.jp1,r.jp1u)+cell(r.jc,r.jcu))
+        + metricCells(r.tp1, r.tp1u)
+        + metricCells(r.tc,  r.tcu,  'sub-sep')
+        + metricCells(r.jp1, r.jp1u, 'grp-sep')
+        + metricCells(r.jc,  r.jcu,  'sub-sep')
         + '</tr>').join('')
     + '</tbody></table></div></div>'
 
@@ -630,6 +703,7 @@ function renderYear(testy, jizdy, y) {
     + '<div class="ch-sec"><div class="ch-title">Jízdy</div><div class="ch-sub">Počty jízd per autoškola</div><div class="ch-wrap"><canvas id="chJ"></canvas></div></div>'
     + '</div>';
 
+  renderSummaryTable(ts, js);
   drawYearCharts(testy, jizdy, months);
   drawCharts(rows);
 }
