@@ -755,8 +755,8 @@ async function openModal(as) {
   document.getElementById('modalBg').style.display = 'flex';
 
   const [rt, rj] = await Promise.all([
-    sb.from('zkousky_testy').select('rok,pokus_typ,hodnoceni').eq('autoskola', as),
-    sb.from('zkousky_jizdy').select('rok,pokus_typ,hodnoceni').eq('autoskola', as),
+    fetchAllPages('zkousky_testy', 'rok,pokus_typ,hodnoceni', {autoskola: as}),
+    fetchAllPages('zkousky_jizdy', 'rok,pokus_typ,hodnoceni', {autoskola: as}),
   ]);
 
   const tData = rt.data || [], jData = rj.data || [];
