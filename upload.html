@@ -59,7 +59,9 @@ input[type=file]{display:none}
 .btn-undo:disabled{opacity:.5;cursor:not-allowed}
 
 .months-card{background:#fff;border:1px solid #d0d7de;border-radius:10px;padding:22px;margin-bottom:18px}
-.months-title{font-size:15px;font-weight:600;margin-bottom:14px}
+.months-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.last-updated{font-size:13px;font-weight:700;color:#24292f;margin-bottom:14px}
+.last-updated .dt{font-size:15px;color:#15803d}
 .months-grid{display:flex;flex-wrap:wrap;gap:8px}
 .month-chip{padding:5px 12px;background:#f6f8fa;border:1px solid #d0d7de;border-radius:20px;font-size:13px;color:#24292f}
 .months-empty{font-size:13px;color:#636c76}
@@ -94,12 +96,12 @@ input[type=file]{display:none}
   </div>
 
   <div class="tabs">
-    <button class="tab active" id="tabJizdy" onclick="setTab('jizdy')">Jízdy (praktická část)</button>
-    <button class="tab" id="tabTesty" onclick="setTab('testy')">Elektronický test</button>
+    <button class="tab active" id="tabTesty" onclick="setTab('testy')">Elektronický test</button>
+    <button class="tab" id="tabJizdy" onclick="setTab('jizdy')">Jízdy (praktická část)</button>
   </div>
 
   <div class="card">
-    <div class="card-title" id="cardTitle">R02 – Praktická část (jízdy)</div>
+    <div class="card-title" id="cardTitle">R01 – Elektronický test</div>
     <div class="card-sub">Přetáhněte nebo vyberte soubor .xlsx s výsledky</div>
 
     <div class="drop" id="dropZone" onclick="document.getElementById('fileInput').click()"
@@ -121,6 +123,7 @@ input[type=file]{display:none}
 
   <div class="months-card">
     <div class="months-title">Nahrané měsíce v databázi</div>
+    <div id="lastUpdated" class="last-updated"></div>
     <div id="monthsList"><div class="months-empty">Načítám…</div></div>
   </div>
 
@@ -171,7 +174,7 @@ const VAL_PROSPEL   = 'Ano';
 
 const MN2 = ['','ledna','února','března','dubna','května','června','července','srpna','září','října','listopadu','prosince'];
 
-let activeTab  = 'jizdy';
+let activeTab  = 'testy';
 let parsedData = null;
 let uploadMode = null;
 let uploadMesic = null;
@@ -473,7 +476,22 @@ async function fetchAllRows(table) {
   return all;
 }
 
+async function loadLastUpdated() {
+  const [rt, rj] = await Promise.all([
+    sb.from('zkousky_testy').select('datum').order('datum', { ascending: false }).limit(1),
+    sb.from('zkousky_jizdy').select('datum').order('datum', { ascending: false }).limit(1),
+  ]);
+  const dates = [rt.data?.[0]?.datum, rj.data?.[0]?.datum].filter(Boolean).map(d => new Date(d));
+  const el = document.getElementById('lastUpdated');
+  if (!dates.length || !el) return;
+  const max = new Date(Math.max(...dates));
+  const dd = String(max.getDate()).padStart(2, '0');
+  const mm = String(max.getMonth() + 1).padStart(2, '0');
+  el.innerHTML = `Data aktualizována k <span class="dt">${dd}.${mm}.${max.getFullYear()}</span>`;
+}
+
 async function loadMonths() {
+  loadLastUpdated();
   const [td, jd] = await Promise.all([
     fetchAllRows('zkousky_testy'),
     fetchAllRows('zkousky_jizdy'),
